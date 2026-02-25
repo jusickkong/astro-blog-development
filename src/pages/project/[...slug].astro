@@ -1,20 +1,319 @@
 ---
+import { Image } from 'astro:assets';
 import { type CollectionEntry, getCollection, render } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
 import ProjectPost from '../../layouts/ProjectPost.astro';
+
+type ProjectPageProps = {
+	kind: 'project';
+	projectSlug: string;
+};
+
+type PostPageProps = {
+	kind: 'post';
+	post: CollectionEntry<'project'>;
+};
+
+type Props = ProjectPageProps | PostPageProps;
 
 export async function getStaticPaths() {
 	const posts = await getCollection('project');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
-}
-type Props = CollectionEntry<'project'>;
+	const projectSlugs = [
+		...new Set(
+			posts
+				.filter((post) => post.id.includes('/'))
+				.map((post) => post.id.split('/')[0])
+				.filter(Boolean),
+		),
+	];
 
-const post = Astro.props;
-const { Content } = await render(post);
+	return [
+		...projectSlugs.map((projectSlug) => ({
+			params: { slug: projectSlug },
+			props: { kind: 'project', projectSlug } as ProjectPageProps,
+		})),
+		...posts.map((post) => ({
+			params: { slug: post.id },
+			props: { kind: 'post', post } as PostPageProps,
+		})),
+	];
+}
+
+const props = Astro.props as Props;
+const isProjectPage = props.kind === 'project';
+
+let post: CollectionEntry<'project'> | null = null;
+let Content: Awaited<ReturnType<typeof render>>['Content'] | null = null;
+
+let projectSlug = '';
+let projectPosts: CollectionEntry<'project'>[] = [];
+let latestPost: CollectionEntry<'project'> | null = null;
+let heroPost: CollectionEntry<'project'> | null = null;
+let summaryPost: CollectionEntry<'project'> | null = null;
+
+if (isProjectPage) {
+	projectSlug = props.projectSlug;
+	projectPosts = (await getCollection('project'))
+		.filter((entry) => entry.id.startsWith(`${projectSlug}/`))
+		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+	latestPost = projectPosts[0] ?? null;
+	heroPost = projectPosts.find((entry) => entry.data.heroImage) ?? latestPost;
+	summaryPost =
+		projectPosts.find(
+			(entry) => entry.data.description && entry.data.description.trim().length > 0,
+		) ?? latestPost;
+} else {
+	post = props.post;
+	const rendered = await render(post);
+	Content = rendered.Content;
+}
 ---
 
-<ProjectPost {...post.data}>
-	<Content />
-</ProjectPost>
+{
+	!isProjectPage && post && Content ? (
+		<ProjectPost {...post.data}>
+			<Content />
+		</ProjectPost>
+	) : (
+		<html lang="en">
+			<head>
+				<BaseHead
+					title={`${projectSlug} | Project`}
+					description={summaryPost?.data.description || `${projectSlug} project posts`}
+				/>
+				<style>
+					main {
+						width: min(980px, calc(100% - 2rem));
+						padding-inline: 0;
+					}
+					.project-hero {
+						display: grid;
+						grid-template-columns: minmax(180px, 260px) 1fr;
+						gap: 1.25rem;
+						padding: 1.2rem;
+						border-radius: 20px;
+						border: 1px solid rgba(var(--gray-light), 0.85);
+						background:
+							radial-gradient(circle at top left, rgba(var(--accent), 0.12), transparent 55%),
+							rgba(255, 255, 255, 0.88);
+						box-shadow: 0 14px 28px rgba(var(--gray), 0.09);
+					}
+					.hero-art {
+						aspect-ratio: 1 / 1;
+						border-radius: 16px;
+						background: rgba(var(--gray-light), 0.35);
+						display: grid;
+						place-items: center;
+						padding: 1rem;
+					}
+					.hero-art img {
+						max-height: 100%;
+						object-fit: contain;
+					}
+					.hero-copy {
+						display: grid;
+						align-content: start;
+						gap: 0.7rem;
+					}
+					.hero-copy h1 {
+						margin: 0;
+						font-size: clamp(2rem, 4vw, 2.8rem);
+					}
+					.hero-meta {
+						display: flex;
+						flex-wrap: wrap;
+						gap: 0.5rem;
+						color: rgb(var(--gray));
+						font-size: 0.92rem;
+					}
+					.badge {
+						display: inline-flex;
+						align-items: center;
+						padding: 0.16rem 0.5rem;
+						border-radius: 999px;
+						background: rgba(var(--accent), 0.08);
+						color: rgb(var(--accent-dark));
+						font-weight: 600;
+					}
+					.hero-desc {
+						margin: 0;
+						color: rgb(var(--gray-dark));
+						line-height: 1.6;
+					}
+					.hero-actions {
+						display: flex;
+						flex-wrap: wrap;
+						gap: 0.6rem;
+					}
+					.hero-actions a {
+						display: inline-flex;
+						align-items: center;
+						justify-content: center;
+						padding: 0.55rem 0.85rem;
+						border-radius: 10px;
+						text-decoration: none;
+						font-weight: 600;
+						border: 1px solid rgba(var(--gray-light), 0.8);
+						background: rgba(255, 255, 255, 0.8);
+						color: rgb(var(--gray-dark));
+					}
+					.hero-actions a.primary {
+						background: rgb(var(--accent));
+						border-color: rgb(var(--accent));
+						color: white;
+					}
+					.post-section {
+						margin-top: 2rem;
+					}
+					.post-section h2 {
+						margin: 0 0 0.9rem;
+					}
+					.post-list {
+						list-style: none;
+						margin: 0;
+						padding: 0;
+						display: grid;
+						gap: 0.9rem;
+					}
+					.post-item a {
+						display: grid;
+						grid-template-columns: 1fr auto;
+						gap: 1rem;
+						padding: 1rem;
+						border-radius: 14px;
+						border: 1px solid rgba(var(--gray-light), 0.85);
+						background: rgba(255, 255, 255, 0.84);
+						color: inherit;
+						text-decoration: none;
+						transition: border-color 0.18s ease, box-shadow 0.18s ease;
+					}
+					.post-item a:hover {
+						border-color: rgba(var(--accent), 0.26);
+						box-shadow: 0 10px 22px rgba(var(--gray), 0.12);
+					}
+					.post-main {
+						min-width: 0;
+					}
+					.post-main h3 {
+						margin: 0 0 0.35rem;
+						font-size: 1.1rem;
+					}
+					.post-main p {
+						margin: 0;
+						color: rgb(var(--gray));
+						font-size: 0.95rem;
+						line-height: 1.45;
+						display: -webkit-box;
+						-webkit-line-clamp: 2;
+						-webkit-box-orient: vertical;
+						overflow: hidden;
+					}
+					.post-date {
+						color: rgb(var(--gray));
+						font-size: 0.92rem;
+						white-space: nowrap;
+					}
+					.empty-state {
+						margin: 0;
+						padding: 1rem;
+						border: 1px dashed rgb(var(--gray-light));
+						border-radius: 12px;
+						color: rgb(var(--gray));
+						background: rgba(255, 255, 255, 0.75);
+					}
+					@media (max-width: 720px) {
+						main {
+							width: calc(100% - 1.25rem);
+						}
+						.project-hero {
+							grid-template-columns: 1fr;
+						}
+						.hero-art {
+							aspect-ratio: 16 / 10;
+						}
+						.post-item a {
+							grid-template-columns: 1fr;
+							gap: 0.5rem;
+						}
+						.post-date {
+							white-space: normal;
+						}
+					}
+				</style>
+			</head>
+			<body>
+				<Header />
+				<main>
+					<section class="project-hero">
+						<div class="hero-art">
+							{heroPost?.data.heroImage ? (
+								<Image src={heroPost.data.heroImage} width={260} alt="" />
+							) : (
+								<span class="badge">No image</span>
+							)}
+						</div>
+						<div class="hero-copy">
+							<div class="hero-meta">
+								<span class="badge">Project</span>
+								<span>{projectPosts.length} posts</span>
+								{
+									latestPost && (
+										<span>
+											Last updated <FormattedDate date={latestPost.data.pubDate} />
+										</span>
+									)
+								}
+							</div>
+							<h1>{projectSlug}</h1>
+							<p class="hero-desc">
+								{summaryPost?.data.description || 'This project does not have a summary yet.'}
+							</p>
+							{
+								latestPost && (
+									<div class="hero-actions">
+										<a
+											class="primary"
+											href={`/project/${latestPost.id}/`}
+										>
+											Open latest post
+										</a>
+									</div>
+								)
+							}
+						</div>
+					</section>
+
+					<section class="post-section">
+						<h2>Posts</h2>
+						{
+							projectPosts.length > 0 ? (
+								<ul class="post-list">
+									{projectPosts.map((entry) => (
+										<li class="post-item">
+											<a href={`/project/${entry.id}/`}>
+												<div class="post-main">
+													<h3>{entry.data.title}</h3>
+													<p>{entry.data.description || 'No description provided.'}</p>
+												</div>
+												<div class="post-date">
+													<FormattedDate date={entry.data.pubDate} />
+												</div>
+											</a>
+										</li>
+									))}
+								</ul>
+							) : (
+								<p class="empty-state">No posts found for this project.</p>
+							)
+						}
+					</section>
+				</main>
+				<Footer />
+			</body>
+		</html>
+	)
+}
