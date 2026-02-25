@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"D:\\\\work\\\\Project\\\\web\\\\Personal\\\\Astro\" && git push 2>&)",
+      "Bash(cd D:\\\\work\\\\Project\\\\web\\\\Personal\\\\Astro:*)",
+      "WebFetch(domain:tina.io)",
+      "Bash(cat:*)"
+    ]
+  }
+}

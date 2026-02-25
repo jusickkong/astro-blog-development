@@ -7,9 +7,20 @@ import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const posts = (await getCollection('project'))
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// 폴더(프로젝트)별로 그룹핑
+const grouped = posts.reduce((acc, post) => {
+	const parts = post.id.split('/');
+	const project = parts.length > 1 ? parts[0] : '';
+	if(project) {
+		if (!acc[project]) acc[project] = [];
+		acc[project].push(post);
+	}
+	return acc;
+}, {} as Record<string, typeof posts>);
+
 ---
 
 <!doctype html>
@@ -35,18 +46,7 @@ const posts = (await getCollection('blog')).sort(
 				text-decoration: none;
 				transition: 0.2s ease;
 			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
+	ul li img {
 				margin-bottom: 0.5rem;
 				border-radius: 12px;
 			}
@@ -69,7 +69,18 @@ const posts = (await getCollection('blog')).sort(
 			ul a:hover img {
 				box-shadow: var(--box-shadow);
 			}
-			@media (max-width: 720px) {
+			.project-title {
+				margin: 2rem 0 0.25rem;
+				font-size: 3rem;
+				border-bottom: 2px solid rgb(var(--accent));
+				padding-bottom: 0.5rem;
+			}
+			.project-desc {
+				margin: 0 0 1rem;
+				color: rgb(var(--gray));
+				font-size: 1rem;
+			}
+		@media (max-width: 720px) {
 				ul {
 					gap: 0.5em;
 				}
@@ -89,25 +100,30 @@ const posts = (await getCollection('blog')).sort(
 	<body>
 		<Header />
 		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
+			{
+				Object.entries(grouped).map(([project, projectPosts]) => (
+					<section>
+						<h1 class="project-title">{project}</h1>
+						<ul>
+							{projectPosts.map((post) => (
+								<li>
+									{post.data.description && <p class="project-desc">*{post.data.description}</p>}
+									<a href={`/project/${post.id}/`}>
+										{post.data.heroImage && (
+											<Image width={360} src={post.data.heroImage} alt="" />
+										)}
+										<h4 class="title">{post.data.title}</h4>
+										<p class="date">
+											<FormattedDate date={post.data.pubDate} />
+										</p>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+					<hr />
+				))
+			}
 		</main>
 		<Footer />
 	</body>
