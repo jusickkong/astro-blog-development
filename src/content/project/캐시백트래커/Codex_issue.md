@@ -1,4 +1,6 @@
 ---
+description: 'Codex 이슈'
+pubDate: '2026-03-06'
 title: Codex 이슈
 ---
 
