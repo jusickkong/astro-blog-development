@@ -1,5 +1,5 @@
 ---
-description: 'Codex 이슈'
+description: ''
 pubDate: '2026-03-06'
 title: Codex 이슈
 ---
