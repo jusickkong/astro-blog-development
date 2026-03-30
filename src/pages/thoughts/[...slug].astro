@@ -17,12 +17,12 @@ type Props = { post: CollectionEntry<'thoughts'> };
 
 const { post } = Astro.props;
 const { Content } = await render(post);
-const { title, description, pubDate, updatedDate } = post.data;
+const { title, description, metaDescription, pubDate, updatedDate } = post.data;
 ---
 
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description ?? title} />
+		<BaseHead title={title} description={description ?? title} metaDescription={metaDescription} />
 		<style>
 			main {
 				width: calc(100% - 2em);
@@ -68,11 +68,11 @@ const { title, description, pubDate, updatedDate } = post.data;
 	</head>
 	<body>
 		<Header />
-		<main>
-			<a class="back-link" href="/thoughts">← Thoughts</a>
+		<main>			
 			<article>
 				<div class="prose">
-					<div class="title">
+					<div class="title">						
+						<h1>{title}</h1>
 						<div class="date">
 							<FormattedDate date={pubDate} />
 							{
@@ -83,7 +83,6 @@ const { title, description, pubDate, updatedDate } = post.data;
 								)
 							}
 						</div>
-						<h1>{title}</h1>
 						<hr />
 					</div>
 					<Content />

@@ -7,6 +7,7 @@ const project = defineCollection({
 		z.object({
 			title: z.string(),
 			description: z.string(),
+			metaDescription: z.string().optional(),
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: image().optional(),
@@ -18,6 +19,7 @@ const thoughts = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		description: z.string().optional(),
+		metaDescription: z.string().optional(),
 		pubDate: z.coerce.date(),
 		updatedDate: z.coerce.date().optional(),
 	}),
