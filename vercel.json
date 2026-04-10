@@ -1,0 +1,9 @@
+{
+  "builds": [
+    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
+  ],
+  "routes": [
+    { "src": "/parents-button-privacy-policy.html", "dest": "/parents-button-privacy-policy.html" },
+    { "src": "/cashback-tracker-privacy-policy.html", "dest": "/cashback-tracker-privacy-policy.html" }
+  ]
+}
