@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>No Reverse Gravity Space</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        #star-container {
+            position: fixed; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #1b2735 0%, #000 100%);
+        }
+
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.6; }
+
+        .shooting-star {
+            position: absolute;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .line {
+            width: 200px; height: 2px;
+            filter: drop-shadow(0 0 5px #fff);
+            border-radius: 2px;
+        }
+
+        /* --- [애니메이션 핵심: 모든 방향을 플러스(+) 전진으로 통일] --- */
+
+        /* 7시 방향 (우상 -> 좌하): 각도 135도 설정 */
+        .dir-7 { 
+            transform: rotate(135deg); 
+            animation: forward var(--duration) ease-in forwards; 
+        }
+        /* 머리가 왼쪽 아래(진행방향 앞쪽)이므로 그라데이션: 투명 -> 흰색 */
+        .dir-7 .line { background: linear-gradient(90deg, transparent, rgba(144, 238, 144, 0.8), #fff); }
+
+        /* 5시 방향 (좌상 -> 우하): 각도 45도 설정 */
+        .dir-5 { 
+            transform: rotate(45deg); 
+            animation: forward var(--duration) ease-in forwards; 
+        }
+        /* 머리가 오른쪽 아래(진행방향 앞쪽)이므로 그라데이션: 투명 -> 흰색 */
+        .dir-5 .line { background: linear-gradient(90deg, transparent, rgba(144, 238, 144, 0.8), #fff); }
+
+        /* 공통 애니메이션: 회전된 각도 방향 그대로 앞으로(translateX) 쏘기 */
+        @keyframes forward {
+            0% { transform: var(--rot) translateX(-200px); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: var(--rot) translateX(1000px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="star-container"></div>
+
+    <script>
+        const container = document.getElementById('star-container');
+
+        // 배경 별
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = star.style.height = (Math.random() * 2) + 'px';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            container.appendChild(star);
+        }
+
+        function createMeteor() {
+            const meteor = document.createElement('div');
+            meteor.className = 'shooting-star';
+            meteor.innerHTML = '<div class="line"></div>';
+
+            const isDir7 = Math.random() > 0.5;
+            const duration = Math.random() * 0.4 + 0.5;
+            meteor.style.setProperty('--duration', duration + 's');
+            
+            if (isDir7) {
+                // 7시 방향 (우상 -> 좌하)
+                meteor.classList.add('dir-7');
+                meteor.style.left = (Math.random() * 50 + 50) + '%';
+                meteor.style.top = (Math.random() * 20) + '%';
+                meteor.style.setProperty('--rot', 'rotate(135deg)');
+            } else {
+                // 5시 방향 (좌상 -> 우하)
+                meteor.classList.add('dir-5');
+                meteor.style.left = (Math.random() * 50 - 20) + '%';
+                meteor.style.top = (Math.random() * 20) + '%';
+                meteor.style.setProperty('--rot', 'rotate(45deg)');
+            }
+
+            container.appendChild(meteor);
+            setTimeout(() => meteor.remove(), duration * 1000);
+        }
+
+        function loop() {
+            createMeteor();
+            setTimeout(loop, Math.random() * 2000 + 1000);
+        }
+        loop();
+    </script>
+</body>
+</html>

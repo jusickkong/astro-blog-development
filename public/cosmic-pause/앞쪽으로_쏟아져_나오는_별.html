@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Spaceship Cockpit View</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        
+        /* 1. 우주 배경 (중심에서 별이 쏟아지는 효과) */
+        #space-container {
+            position: fixed; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #1b2735 0%, #000 100%);
+            z-index: 1;
+        }
+
+        /* 2. 우주선 내부 프레임 (CSS로 그린 조종석 창문) */
+        .cockpit-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 10; pointer-events: none;
+            /* 육각형 우주선 창문 느낌 연출 */
+            background: 
+                linear-gradient(45deg, #111 25%, transparent 25%) -50px 0,
+                linear-gradient(-45deg, #111 25%, transparent 25%) -50px 0,
+                linear-gradient(45deg, transparent 75%, #111 75%),
+                linear-gradient(-45deg, transparent 75%, #111 75%);
+            background-size: 100% 100%;
+            border: 60px solid #1a1a1a;
+            border-bottom-width: 120px; /* 아래쪽은 계기판 자리 */
+            border-radius: 40px;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9), 0 0 50px rgba(0,0,0,1);
+        }
+
+        /* 계기판 빛 효과 */
+        .dashboard-light {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 10px;
+            background: linear-gradient(90deg, transparent, #00f2ff, transparent);
+            filter: blur(5px); animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            z-index: 2;
+            /* 1. 기본적인 빛 번짐(Glow) 효과 */
+            box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.8);
+        }
+
+        /* 2. 가로/세로 빛줄기 추가 (선택 사항) */
+        .star::before, .star::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* 가로줄 */
+        .star::before {
+            width: 300%; /* 별 크기의 3배 */
+            height: 1px;
+        }
+
+        /* 세로줄 */
+        .star::after {
+            width: 1px;
+            height: 300%;
+        }
+    </style>
+</head>
+<body>
+    <div id="space-container"></div>    
+
+    <script>
+        // 별의 색상 리스트 (온도가 높은 순서대로)
+        const starColors = [
+            '#9bb2ff', // 푸른색 (가장 뜨거움)
+            '#bbccff', // 청백색
+            '#f8f7ff', // 흰색
+            '#fff4ea', // 황백색
+            '#fff2a1', // 노란색
+            '#ffcc6f', // 주황색
+            '#ffae6d', // 붉은 주황색
+            '#ff7b7b'  // 붉은색 (가장 차가움)
+        ];
+
+        const container = document.getElementById('space-container');
+        const stars = [];
+        const starCount = 100;
+
+        // 별 초기화 (중심에서 시작)
+        for (let i = 0; i < starCount; i++) {
+            createStar();
+        }
+
+        function createStar() {
+            const star = document.createElement('div');
+            star.className = 'star';
+            
+            // 무작위로 색상 선택
+            const randomColor = starColors[Math.floor(Math.random() * starColors.length)];
+            
+            const x = 50;
+            const y = 50;
+            const size = Math.random() * 2;
+            
+            star.style.left = x + '%';
+            star.style.top = y + '%';
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            
+            // 선택된 색상 적용
+            star.style.backgroundColor = randomColor;
+            // 빛 번짐 효과에도 해당 색상 반영
+            star.style.boxShadow = `0 0 ${size * 2}px ${randomColor}`;
+            
+            // 이동 방향 벡터
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 0.5 + 0.2;
+            
+            const starObj = {
+                el: star,
+                x: x, y: y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 0
+            };
+            
+            container.appendChild(star);
+            stars.push(starObj);
+        }
+
+        function animate() {
+            for (let i = 0; i < stars.length; i++) {
+                const s = stars[i];
+                s.x += s.vx;
+                s.y += s.vy;
+                s.life += 0.01;
+
+                // 중심에서 멀어질수록 크기와 속도 증가 (원근감)
+                s.el.style.left = s.x + '%';
+                s.el.style.top = s.y + '%';
+                s.el.style.transform = `scale(${1 + s.life * 2})`;
+                s.el.style.opacity = Math.min(s.life, 1);
+
+                // 화면 밖으로 나가면 초기화
+                if (s.x < -10 || s.x > 110 || s.y < -10 || s.y > 110) {
+                    s.x = 50; s.y = 50;
+                    s.life = 0;
+                    const angle = Math.random() * Math.PI * 2;
+                    s.vx = Math.cos(angle) * (Math.random() * 0.5 + 0.2);
+                    s.vy = Math.sin(angle) * (Math.random() * 0.5 + 0.2);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

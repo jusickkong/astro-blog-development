@@ -4,6 +4,7 @@
   ],
   "routes": [
     { "src": "/parents-button-privacy-policy.html", "dest": "/parents-button-privacy-policy.html" },
-    { "src": "/cashback-tracker-privacy-policy.html", "dest": "/cashback-tracker-privacy-policy.html" }
+    { "src": "/cashback-tracker-privacy-policy.html", "dest": "/cashback-tracker-privacy-policy.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }

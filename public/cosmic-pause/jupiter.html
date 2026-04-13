@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>목성 뷰</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; }
+    canvas { display: block; }
+    #info {
+      position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 15px; right: 15px; color: #b9c7d8;
+      font-family: Arial, sans-serif; font-size: 13px;
+      pointer-events: none;
+      line-height: 1.5;
+    }
+    @media (max-width: 640px) {
+      #info { font-size: 12px; }
+    }
+  </style>
+</head>
+<body data-title-key="pages.jupiter.title">
+  <div id="info" data-i18n="pages.jupiter.info">목성</div>
+
+  <script src="assets/js/i18n.js"></script>
+  <script>
+    window.SpaceMungI18n.applyLocale();
+  </script>
+
+  <script src="assets/js/three.js/r134/three.min.js"></script>
+  <script src="assets/js/controls/OrbitControls.js"></script>
+
+  <script>
+    const PLANET_RADIUS = 21.4;
+    const CAMERA_DIRECTION = new THREE.Vector3(0, 0.24, 1).normalize();
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 2000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.06;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(9000);
+    for (let i = 0; i < starPos.length; i++) {
+      starPos[i] = (Math.random() - 0.5) * 1800;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    scene.add(new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({ color: 0xffffff, size: 0.42 })
+    ));
+
+    const sunLight = new THREE.DirectionalLight(0xfff2dd, 2.4);
+    sunLight.position.set(70, 25, 45);
+    scene.add(sunLight);
+    scene.add(new THREE.AmbientLight(0x22314b, 0.78));
+
+    const planetGroup = new THREE.Group();
+    planetGroup.rotation.z = 3.1 * Math.PI / 180;
+    scene.add(planetGroup);
+
+    const textureLoader = new THREE.TextureLoader();
+    const jupiterTexture = textureLoader.load('assets/images/960px-Solarsystemscope_texture_2k_jupiter.jpg');
+    jupiterTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    const jupiter = new THREE.Mesh(
+      new THREE.SphereGeometry(10, 160, 160),
+      new THREE.MeshPhongMaterial({
+        map: jupiterTexture,
+        shininess: 10,
+        specular: 0x1c1a18
+      })
+    );
+    planetGroup.add(jupiter);
+
+    const atmosphere = new THREE.Mesh(
+      new THREE.SphereGeometry(10.22, 96, 96),
+      new THREE.MeshPhongMaterial({
+        color: 0xd7b48a,
+        transparent: true,
+        opacity: 0.08,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      })
+    );
+    planetGroup.add(atmosphere);
+
+    function createJupiterRingTexture() {
+      const size = 1024;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const image = ctx.createImageData(size, size);
+      const data = image.data;
+      const center = size / 2;
+
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const dx = x - center;
+          const dy = y - center;
+          const dist = Math.sqrt(dx * dx + dy * dy) / center;
+          let alpha = 0;
+
+          if (dist > 0.34 && dist < 0.42) {
+            const t = (dist - 0.34) / 0.08;
+            alpha = 0.16 * Math.sin(t * Math.PI);
+          } else if (dist >= 0.42 && dist < 0.56) {
+            const t = (dist - 0.42) / 0.14;
+            alpha = 0.05 * (1 - t);
+          }
+
+          const grain = 0.88 + Math.random() * 0.24;
+          const idx = (y * size + x) * 4;
+          data[idx] = 214 * grain;
+          data[idx + 1] = 198 * grain;
+          data[idx + 2] = 176 * grain;
+          data[idx + 3] = Math.min(255, alpha * 255);
+        }
+      }
+
+      ctx.putImageData(image, 0, 0);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      return texture;
+    }
+
+    const ringTexture = createJupiterRingTexture();
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(13.2, 21.4, 256),
+      new THREE.MeshBasicMaterial({
+        map: ringTexture,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.42,
+        depthWrite: false,
+        color: 0xd8ccb9
+      })
+    );
+    ring.rotation.x = Math.PI / 2;
+    planetGroup.add(ring);
+
+    function fitCameraToSphere(radius, padding) {
+      const vFov = THREE.MathUtils.degToRad(camera.fov);
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+      const distanceForHeight = (radius * padding) / Math.tan(vFov / 2);
+      const distanceForWidth = (radius * padding) / Math.tan(hFov / 2);
+      return Math.max(distanceForHeight, distanceForWidth);
+    }
+
+    function updateViewport() {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+
+      const isMobile = innerWidth < 768;
+      const distance = fitCameraToSphere(PLANET_RADIUS, isMobile ? 1.44 : 1.16);
+      camera.position.copy(CAMERA_DIRECTION).multiplyScalar(distance);
+      controls.minDistance = distance * 0.82;
+      controls.maxDistance = distance * 3.2;
+    }
+
+    updateViewport();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      jupiter.rotation.y += 0.0026;
+      atmosphere.rotation.y += 0.0029;
+      ring.rotation.z += 0.00015;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      updateViewport();
+    });
+  </script>
+</body>
+</html>
