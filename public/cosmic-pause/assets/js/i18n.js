@@ -49,7 +49,7 @@
       'pages.moon.loading': '달 로딩 중...',
       'pages.moon.error': '로딩 실패... 인터넷 확인 후 새로고침',
       'pages.mercury.title': '수성',
-      'pages.mercury.loading': '수성 텍스처 로딩 중...',
+      'pages.mercury.loading': '수성 로딩 중...',
       'pages.mercury.info': '수성 · 태양 가까이에서 조용히 타는 바위 행성',
       'pages.mercury.error': '수성 텍스처를 불러오지 못했습니다. 파일 경로를 확인해 주세요.',
       'pages.earth.title': '지구',
