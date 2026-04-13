@@ -25,6 +25,10 @@
   <script>
     window.SpaceMungI18n.applyLocale();
   </script>
+  <script src="assets/js/audio-player.js"></script>
+  <script>
+    window.SpaceMungAudio.initPageAudio();
+  </script>
 
   <script src="assets/js/three.js/r134/three.min.js"></script>
   <script src="assets/js/controls/OrbitControls.js"></script>
@@ -62,7 +66,7 @@
     scene.add(new THREE.AmbientLight(0x3e2d1f, 0.72));
 
     const loader = new THREE.TextureLoader();
-    const venusTexture = loader.load('assets/images/960px-Solarsystemscope_texture_2k_venus_surface.jpg');
+    const venusTexture = loader.load('assets/images/4k_venus_atmosphere.jpg');
     venusTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
     const venusGroup = new THREE.Group();

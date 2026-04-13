@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>은하수</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 82%, rgba(255, 174, 110, 0.24), rgba(255, 174, 110, 0) 24%),
+        radial-gradient(circle at 24% 18%, rgba(42, 92, 170, 0.18), rgba(42, 92, 170, 0) 28%),
+        linear-gradient(180deg, #071120 0%, #050914 45%, #020308 78%, #010204 100%);
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #info {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      left: 15px;
+      right: 15px;
+      color: #d5dff4;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      pointer-events: none;
+      text-shadow: 0 0 18px rgba(0, 0, 0, 0.55);
+      z-index: 20;
+    }
+
+    @media (max-width: 640px) {
+      #info {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body data-title-key="pages.milkyway.title">
+  <div id="info" data-i18n="pages.milkyway.info">은하수</div>
+
+  <script src="assets/js/i18n.js"></script>
+  <script>
+    window.SpaceMungI18n.applyLocale();
+  </script>
+  <script src="assets/js/audio-player.js"></script>
+  <script>
+    window.SpaceMungAudio.initPageAudio();
+  </script>
+  <script src="assets/js/three.js/r134/three.min.js"></script>
+  <script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(54, innerWidth / innerHeight, 0.1, 4000);
+    camera.position.set(0, 0, 20);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
+    document.body.appendChild(renderer.domElement);
+
+    function createStarTexture(size = 96) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      gradient.addColorStop(0, 'rgba(255,255,255,1)');
+      gradient.addColorStop(0.12, 'rgba(255,255,255,0.92)');
+      gradient.addColorStop(0.28, 'rgba(255,255,255,0.34)');
+      gradient.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    function createNebulaTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 1024;
+      const ctx = canvas.getContext('2d');
+
+      const blobs = [
+        { x: 0.48, y: 0.52, r: 0.34, color: 'rgba(215, 164, 255, 0.18)' },
+        { x: 0.58, y: 0.68, r: 0.28, color: 'rgba(255, 186, 138, 0.18)' },
+        { x: 0.36, y: 0.34, r: 0.24, color: 'rgba(128, 160, 255, 0.14)' },
+        { x: 0.52, y: 0.18, r: 0.22, color: 'rgba(255, 214, 178, 0.1)' }
+      ];
+
+      blobs.forEach((blob) => {
+        const gradient = ctx.createRadialGradient(
+          canvas.width * blob.x,
+          canvas.height * blob.y,
+          0,
+          canvas.width * blob.x,
+          canvas.height * blob.y,
+          canvas.width * blob.r
+        );
+        gradient.addColorStop(0, blob.color);
+        gradient.addColorStop(0.45, blob.color.replace(/0\.\d+\)/, '0.08)'));
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      });
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      return texture;
+    }
+
+    function createDustTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = 'rgba(0,0,0,0)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < 28; i++) {
+        const x = Math.random() * canvas.width;
+        const y = canvas.height * (0.25 + Math.random() * 0.5);
+        const rx = 90 + Math.random() * 220;
+        const ry = 12 + Math.random() * 30;
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, rx);
+        gradient.addColorStop(0, 'rgba(0, 0, 0, 0.32)');
+        gradient.addColorStop(0.45, 'rgba(0, 0, 0, 0.18)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.ellipse(x, y, rx, ry, Math.random() * 0.5 - 0.25, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      return texture;
+    }
+
+    const starTexture = createStarTexture();
+
+    function addFarStars() {
+      const count = 5200;
+      const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+
+      for (let i = 0; i < count; i++) {
+        const index = i * 3;
+        positions[index] = THREE.MathUtils.randFloatSpread(520);
+        positions[index + 1] = THREE.MathUtils.randFloatSpread(320);
+        positions[index + 2] = -240 - Math.random() * 1200;
+
+        const base = 0.48 + Math.random() * 0.36;
+        const hueMix = Math.random();
+        colors[index] = base;
+        colors[index + 1] = base * (0.9 + hueMix * 0.08);
+        colors[index + 2] = base * (hueMix > 0.72 ? 0.84 : 1);
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const material = new THREE.PointsMaterial({
+        map: starTexture,
+        size: 1.45,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.72,
+        vertexColors: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      const stars = new THREE.Points(geometry, material);
+      scene.add(stars);
+      return stars;
+    }
+
+    function addMilkyWayBand() {
+      const count = 26000;
+      const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+
+      for (let i = 0; i < count; i++) {
+        const index = i * 3;
+        const t = Math.random();
+        const centerY = -138 + t * 330;
+        const centerX = -34 + Math.sin(t * 2.45 - 0.45) * 18 + Math.sin(t * 6.3) * 5;
+        const spreadX = 16 + Math.sin(t * Math.PI) * 24;
+        const spreadY = 7 + Math.sin(t * Math.PI) * 22;
+
+        const x = centerX + THREE.MathUtils.randFloatSpread(spreadX * 2.3);
+        const y = centerY + THREE.MathUtils.randFloatSpread(spreadY * 2.7);
+        const z = -130 - Math.random() * 460;
+
+        const coreStrength = 1 - Math.min(1, Math.abs(x - centerX) / (spreadX * 1.25));
+        const verticalStrength = 1 - Math.min(1, Math.abs(y - centerY) / (spreadY * 1.35));
+        const density = Math.max(0.12, coreStrength * 0.68 + verticalStrength * 0.32);
+        const warmth = 0.35 + Math.sin(t * Math.PI) * 0.65;
+        const brightness = 0.42 + density * 0.92 + Math.random() * 0.18;
+
+        positions[index] = x;
+        positions[index + 1] = y;
+        positions[index + 2] = z;
+
+        colors[index] = brightness;
+        colors[index + 1] = brightness * (0.8 + warmth * 0.18);
+        colors[index + 2] = brightness * (warmth > 0.7 ? 0.82 : 1);
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const material = new THREE.PointsMaterial({
+        map: starTexture,
+        size: 2.05,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.94,
+        vertexColors: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      const band = new THREE.Points(geometry, material);
+      band.rotation.z = THREE.MathUtils.degToRad(20);
+      scene.add(band);
+      return band;
+    }
+
+    function addCoreGlow() {
+      const texture = createNebulaTexture();
+      const group = new THREE.Group();
+      const layers = [
+        { x: 10, y: -78, z: -210, scale: 230, color: 0xffd3ab, opacity: 0.18 },
+        { x: -8, y: -28, z: -250, scale: 260, color: 0xd8b1ff, opacity: 0.12 },
+        { x: -18, y: 74, z: -300, scale: 300, color: 0x8cadff, opacity: 0.1 }
+      ];
+
+      layers.forEach((layer) => {
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: texture,
+          color: layer.color,
+          transparent: true,
+          opacity: layer.opacity,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        }));
+        sprite.position.set(layer.x, layer.y, layer.z);
+        sprite.scale.set(layer.scale, layer.scale * 1.5, 1);
+        group.add(sprite);
+      });
+
+      group.rotation.z = THREE.MathUtils.degToRad(18);
+      scene.add(group);
+      return group;
+    }
+
+    function addDustLanes() {
+      const dustTexture = createDustTexture();
+      const lanes = new THREE.Group();
+      const configs = [
+        { x: 0, y: -72, z: -160, scaleX: 200, scaleY: 62, opacity: 0.34 },
+        { x: -12, y: -2, z: -220, scaleX: 230, scaleY: 56, opacity: 0.24 },
+        { x: -18, y: 78, z: -280, scaleX: 250, scaleY: 54, opacity: 0.18 }
+      ];
+
+      configs.forEach((config) => {
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: dustTexture,
+          color: 0x000000,
+          transparent: true,
+          opacity: config.opacity,
+          depthWrite: false
+        }));
+        sprite.position.set(config.x, config.y, config.z);
+        sprite.scale.set(config.scaleX, config.scaleY, 1);
+        lanes.add(sprite);
+      });
+
+      lanes.rotation.z = THREE.MathUtils.degToRad(18);
+      scene.add(lanes);
+      return lanes;
+    }
+
+    const farStars = addFarStars();
+    const milkyWayBand = addMilkyWayBand();
+    const coreGlow = addCoreGlow();
+    const dustLanes = addDustLanes();
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+
+      farStars.rotation.z = Math.sin(elapsed * 0.08) * 0.02;
+      farStars.position.x = Math.sin(elapsed * 0.05) * 6;
+      farStars.position.y = Math.cos(elapsed * 0.04) * 3;
+
+      milkyWayBand.rotation.z = THREE.MathUtils.degToRad(20) + Math.sin(elapsed * 0.13) * 0.03;
+      milkyWayBand.position.x = Math.sin(elapsed * 0.08) * 12;
+      milkyWayBand.position.y = Math.cos(elapsed * 0.07) * 8;
+
+      coreGlow.rotation.z = THREE.MathUtils.degToRad(18) + Math.sin(elapsed * 0.11) * 0.022;
+      coreGlow.position.x = Math.sin(elapsed * 0.075) * 10;
+      coreGlow.position.y = Math.cos(elapsed * 0.06) * 7;
+
+      dustLanes.rotation.z = THREE.MathUtils.degToRad(18) + Math.sin(elapsed * 0.1) * 0.018;
+      dustLanes.position.x = Math.sin(elapsed * 0.07) * 8;
+      dustLanes.position.y = Math.cos(elapsed * 0.055) * 5.5;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>

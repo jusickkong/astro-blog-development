@@ -173,6 +173,36 @@
       font-size: 1.15rem;
     }
 
+    .item.ad-slot {
+      align-items: flex-start;
+      min-height: 120px;
+      border-style: dashed;
+      border-color: rgba(120, 150, 210, 0.24);
+      background:
+        linear-gradient(180deg, rgba(17, 27, 45, 0.72), rgba(8, 14, 26, 0.84));
+    }
+
+    .item.ad-slot:hover {
+      transform: none;
+      border-color: rgba(120, 150, 210, 0.32);
+      background:
+        linear-gradient(180deg, rgba(17, 27, 45, 0.78), rgba(8, 14, 26, 0.9));
+      box-shadow: none;
+    }
+
+    .item.ad-slot .icon {
+      background: rgba(255, 196, 110, 0.1);
+      color: #ffd98f;
+    }
+
+    .item.ad-slot .title {
+      color: #fff2cf;
+    }
+
+    .item.ad-slot .desc {
+      color: #aab7d4;
+    }
+
     @media (min-width: 720px) {
       body {
         padding: 32px 24px 96px;
@@ -239,7 +269,6 @@
 <body data-title-key="home.title">
   <div class="app-shell">
     <section class="hero">
-      <div class="eyebrow">Mobile First</div>
       <h1 data-i18n="home.title">우주..멍</h1>
       <p class="sub" data-i18n="home.subtitle">생각 없이, 그냥 바라보기</p>
       <p class="lead" data-i18n="home.lead">휴대폰으로 열고, 더 크게 보고 싶으면 TV나 모니터로 캐스팅해서 멍 때리기.</p>
@@ -249,83 +278,66 @@
       </div>
     </section>
 
-    <div class="list">
-      <a class="item" href="moon.html">
-        <div class="icon">🌕</div>
-        <div class="label">
-          <div class="title" data-i18n="home.moon.title">달 멍</div>
-          <div class="desc" data-i18n="home.moon.desc">아무도 없는 달에서 혼자</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-      <a class="item" href="solar.html">
-        <div class="icon">☀️</div>
-        <div class="label">
-          <div class="title" data-i18n="home.sun.title">태양 멍</div>
-          <div class="desc" data-i18n="home.sun.desc">타오르는데 왜 이렇게 고요하지</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-      <a class="item" href="mars.html">
-        <div class="icon">🔴</div>
-        <div class="label">
-          <div class="title" data-i18n="home.mars.title">화성 멍</div>
-          <div class="desc" data-i18n="home.mars.desc">아무것도 없어서 오히려 좋아</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-      <a class="item" href="solar_system.html">
-        <div class="icon">🪐</div>
-        <div class="label">
-          <div class="title" data-i18n="home.system.title">태양계 멍</div>
-          <div class="desc" data-i18n="home.system.desc">다들 각자의 궤도로 열심히</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-      <a class="item" href="stars_pouring_out_forward.html">
-        <div class="icon">✨</div>
-        <div class="label">
-          <div class="title" data-i18n="home.warp.title">별 쏟아지기</div>
-          <div class="desc" data-i18n="home.warp.desc">워프 드라이브 켰을 때 그 느낌</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-      <a class="item" href="faint_cosmic_star_falling_meteor.html">
-        <div class="icon">🌌</div>
-        <div class="label">
-          <div class="title" data-i18n="home.space.title">우주 멍</div>
-          <div class="desc" data-i18n="home.space.desc">저 별은 이미 없어졌을지도</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-      <a class="item" href="saturn.html">
-        <div class="icon">🪐</div>
-        <div class="label">
-          <div class="title" data-i18n="home.saturn.title">토성 멍</div>
-          <div class="desc" data-i18n="home.saturn.desc">고리와 함께 천천히 떠 있는 행성</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-      <a class="item" href="jupiter.html">
-        <div class="icon">♃</div>
-        <div class="label">
-          <div class="title" data-i18n="home.jupiter.title">목성 멍</div>
-          <div class="desc" data-i18n="home.jupiter.desc">가로 밴드가 조용히 흐르는 거대 기체 행성</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-      <a class="item" href="venus.html">
-        <div class="icon">♀</div>
-        <div class="label">
-          <div class="title" data-i18n="home.venus.title">금성 멍</div>
-          <div class="desc" data-i18n="home.venus.desc">두꺼운 대기 속에 밀폐된 주황빛 행성</div>
-        </div>
-        <div class="arrow">›</div>
-      </a>
-    </div>
+    <div class="list" id="scene-list"></div>
   </div>
   <script src="assets/js/i18n.js"></script>
   <script>
+    const listItems = [
+      { type: 'scene', href: 'moon.html', icon: '🌕', titleKey: 'home.moon.title', descKey: 'home.moon.desc' },
+      { type: 'scene', href: 'mercury.html', icon: '☿', titleKey: 'home.mercury.title', descKey: 'home.mercury.desc' },
+      { type: 'scene', href: 'earth.html', icon: '🌍', titleKey: 'home.earth.title', descKey: 'home.earth.desc' },
+      { type: 'scene', href: 'solar.html', icon: '☀️', titleKey: 'home.sun.title', descKey: 'home.sun.desc' },
+      /*{
+        type: 'ad',
+        icon: 'AD',
+        title: '광고 슬롯',
+        desc: '여기에 배너, 스폰서 카드, 자체 프로모션을 원하는 순서에 끼워 넣을 수 있습니다.'
+      },*/
+      { type: 'scene', href: 'mars.html', icon: '🔴', titleKey: 'home.mars.title', descKey: 'home.mars.desc' },
+      { type: 'scene', href: 'solar_system.html', icon: '🪐', titleKey: 'home.system.title', descKey: 'home.system.desc' },
+      { type: 'scene', href: 'stars_pouring_out_forward.html', icon: '✨', titleKey: 'home.warp.title', descKey: 'home.warp.desc' },
+      { type: 'scene', href: 'faint_cosmic_star_falling_meteor.html', icon: '🌌', titleKey: 'home.space.title', descKey: 'home.space.desc' },
+      { type: 'scene', href: 'milky_way.html', icon: '🌠', titleKey: 'home.milkyway.title', descKey: 'home.milkyway.desc' },
+      { type: 'scene', href: 'saturn.html', icon: '🪐', titleKey: 'home.saturn.title', descKey: 'home.saturn.desc' },
+      { type: 'scene', href: 'jupiter.html', icon: '♃', titleKey: 'home.jupiter.title', descKey: 'home.jupiter.desc' },
+      { type: 'scene', href: 'venus.html', icon: '♀', titleKey: 'home.venus.title', descKey: 'home.venus.desc' }
+    ];
+
+    function renderSceneList() {
+      const container = document.getElementById('scene-list');
+      container.innerHTML = '';
+
+      listItems.forEach((item) => {
+        if (item.type === 'ad') {
+          const slot = document.createElement('div');
+          slot.className = 'item ad-slot';
+          slot.innerHTML = `
+            <div class="icon">${item.icon}</div>
+            <div class="label">
+              <div class="title">${item.title}</div>
+              <div class="desc">${item.desc}</div>
+            </div>
+          `;
+          container.appendChild(slot);
+          return;
+        }
+
+        const link = document.createElement('a');
+        link.className = 'item';
+        link.href = item.href;
+        link.innerHTML = `
+          <div class="icon">${item.icon}</div>
+          <div class="label">
+            <div class="title" data-i18n="${item.titleKey}">${window.SpaceMungI18n.t(item.titleKey)}</div>
+            <div class="desc" data-i18n="${item.descKey}">${window.SpaceMungI18n.t(item.descKey)}</div>
+          </div>
+          <div class="arrow">›</div>
+        `;
+        container.appendChild(link);
+      });
+    }
+
+    renderSceneList();
     window.SpaceMungI18n.installSettingsPanel();
     window.SpaceMungI18n.applyLocale();
   </script>

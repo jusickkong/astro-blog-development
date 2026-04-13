@@ -25,13 +25,18 @@
   <script>
     window.SpaceMungI18n.applyLocale();
   </script>
+  <script src="assets/js/audio-player.js"></script>
+  <script>
+    window.SpaceMungAudio.initPageAudio();
+  </script>
 
   <script src="assets/js/three.js/r134/three.min.js"></script>
   <script src="assets/js/controls/OrbitControls.js"></script>
 
   <script>
-    const PLANET_RADIUS = 22;
-    const CAMERA_DIRECTION = new THREE.Vector3(0, 0.33, 1).normalize();
+    const PLANET_RADIUS = 8;
+    const CAMERA_DIRECTION = new THREE.Vector3(0, 0.40, 1).normalize();
+    const CAMERA_TARGET = new THREE.Vector3(2, -2.4, 0);
     // ── 기본 세팅 ──────────────────────────────
     const scene    = new THREE.Scene();
     const camera   = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 2000);
@@ -45,6 +50,7 @@
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
+    controls.target.copy(CAMERA_TARGET);
 
     // ── 별 배경 ────────────────────────────────
     const starGeo = new THREE.BufferGeometry();
@@ -119,7 +125,7 @@
     const saturn = new THREE.Mesh(
       new THREE.SphereGeometry(8, 128, 128),
       new THREE.MeshPhongMaterial({
-        map: new THREE.TextureLoader().load('assets/images/960px-Solarsystemscope_texture_2k_saturn.jpg'),
+        map: new THREE.TextureLoader().load('assets/images/8k_saturn.jpg'),
         shininess: 8,
         specular: 0x111111,
       })
@@ -151,7 +157,7 @@
     }
 
     // ── UV 보정: U=반경, V=0.5(고정) ─────────────────────
-    const RING_INNER = 9.5, RING_OUTER = 22;
+    const RING_INNER = 9.1, RING_OUTER = 17.2;
 
     function fixRingUVs(geometry) {
       const pos = geometry.attributes.position;
@@ -215,10 +221,12 @@
       renderer.setSize(innerWidth, innerHeight);
 
       const isMobile = innerWidth < 768;
-      const distance = fitCameraToSphere(PLANET_RADIUS, isMobile ? 1.44 : 1.14);
+      const distance = fitCameraToSphere(PLANET_RADIUS, isMobile ? 2.28 : 1.68);
       camera.position.copy(CAMERA_DIRECTION).multiplyScalar(distance);
-      controls.minDistance = distance * 0.8;
+      controls.target.copy(CAMERA_TARGET);
+      controls.minDistance = distance * 0.86;
       controls.maxDistance = distance * 3.4;
+      controls.update();
     }
 
     updateViewport();

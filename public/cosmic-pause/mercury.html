@@ -3,23 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>목성 뷰</title>
+  <title>수성</title>
   <style>
     body { margin: 0; overflow: hidden; background: #000; }
     canvas { display: block; }
-    #info {
-      position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 15px; right: 15px; color: #b9c7d8;
-      font-family: Arial, sans-serif; font-size: 13px;
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(82vw, 360px);
+      color: #e8dfd3;
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      text-align: center;
       pointer-events: none;
+      z-index: 100;
+    }
+    #info {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      left: 15px;
+      right: 15px;
+      color: #c9c2b6;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
       line-height: 1.5;
+      pointer-events: none;
     }
     @media (max-width: 640px) {
       #info { font-size: 12px; }
     }
   </style>
 </head>
-<body data-title-key="pages.jupiter.title">
-  <div id="info" data-i18n="pages.jupiter.info">목성</div>
+<body data-title-key="pages.mercury.title">
+  <div id="loading" data-i18n="pages.mercury.loading">수성 로딩 중...</div>
+  <div id="info" data-i18n="pages.mercury.info">수성</div>
 
   <script src="assets/js/i18n.js"></script>
   <script>
@@ -34,25 +54,27 @@
   <script src="assets/js/controls/OrbitControls.js"></script>
 
   <script>
-    const PLANET_RADIUS = 10.22;
-    const CAMERA_DIRECTION = new THREE.Vector3(0, 0.24, 1).normalize();
+    const PLANET_RADIUS = 8.4;
+    const CAMERA_DIRECTION = new THREE.Vector3(0.08, 0.24, 1).normalize();
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 2000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(innerWidth, innerHeight);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.06;
+    renderer.toneMappingExposure = 1.02;
     document.body.appendChild(renderer.domElement);
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
+    controls.enablePan = false;
 
     const starGeo = new THREE.BufferGeometry();
-    const starPos = new Float32Array(9000);
+    const starPos = new Float32Array(7200);
     for (let i = 0; i < starPos.length; i++) {
-      starPos[i] = (Math.random() - 0.5) * 1800;
+      starPos[i] = (Math.random() - 0.5) * 1700;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
     scene.add(new THREE.Points(
@@ -60,40 +82,35 @@
       new THREE.PointsMaterial({ color: 0xffffff, size: 0.42 })
     ));
 
-    const sunLight = new THREE.DirectionalLight(0xfff2dd, 2.4);
-    sunLight.position.set(70, 25, 45);
+    const sunLight = new THREE.DirectionalLight(0xffefcf, 2.6);
+    sunLight.position.set(62, 18, 40);
     scene.add(sunLight);
-    scene.add(new THREE.AmbientLight(0x22314b, 0.78));
+    scene.add(new THREE.AmbientLight(0x2d241a, 0.34));
 
-    const planetGroup = new THREE.Group();
-    planetGroup.rotation.z = 3.1 * Math.PI / 180;
-    scene.add(planetGroup);
-
+    const loading = document.getElementById('loading');
     const textureLoader = new THREE.TextureLoader();
-    const jupiterTexture = textureLoader.load('assets/images/Solarsystemscope_texture_2k_jupiter.jpg');
-    jupiterTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const mercuryTexture = textureLoader.load(
+      'assets/images/8k_mercury.jpg',
+      () => {
+        loading.style.display = 'none';
+      },
+      undefined,
+      () => {
+        loading.textContent = window.SpaceMungI18n.t('pages.mercury.error');
+      }
+    );
+    mercuryTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
-    const jupiter = new THREE.Mesh(
-      new THREE.SphereGeometry(10, 160, 160),
+    const mercury = new THREE.Mesh(
+      new THREE.SphereGeometry(PLANET_RADIUS, 180, 180),
       new THREE.MeshPhongMaterial({
-        map: jupiterTexture,
-        shininess: 10,
-        specular: 0x1c1a18
+        map: mercuryTexture,
+        shininess: 4,
+        specular: 0x1e1a16
       })
     );
-    planetGroup.add(jupiter);
-
-    const atmosphere = new THREE.Mesh(
-      new THREE.SphereGeometry(10.22, 96, 96),
-      new THREE.MeshPhongMaterial({
-        color: 0xd7b48a,
-        transparent: true,
-        opacity: 0.08,
-        side: THREE.DoubleSide,
-        depthWrite: false
-      })
-    );
-    planetGroup.add(atmosphere);
+    mercury.rotation.z = THREE.MathUtils.degToRad(0.03);
+    scene.add(mercury);
 
     function fitCameraToSphere(radius, padding) {
       const vFov = THREE.MathUtils.degToRad(camera.fov);
@@ -109,10 +126,10 @@
       renderer.setSize(innerWidth, innerHeight);
 
       const isMobile = innerWidth < 768;
-      const distance = fitCameraToSphere(PLANET_RADIUS, isMobile ? 1.72 : 1.1);
+      const distance = fitCameraToSphere(PLANET_RADIUS, isMobile ? 1.48 : 1.12);
       camera.position.copy(CAMERA_DIRECTION).multiplyScalar(distance);
       controls.minDistance = distance * 0.88;
-      controls.maxDistance = distance * 3.2;
+      controls.maxDistance = distance * 3;
     }
 
     updateViewport();
@@ -120,15 +137,13 @@
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
-      jupiter.rotation.y += 0.0026;
-      atmosphere.rotation.y += 0.0029;
+      mercury.rotation.y += 0.0011;
       renderer.render(scene, camera);
     }
+
     animate();
 
-    window.addEventListener('resize', () => {
-      updateViewport();
-    });
+    window.addEventListener('resize', updateViewport);
   </script>
 </body>
 </html>

@@ -48,6 +48,10 @@
   <script>
     window.SpaceMungI18n.applyLocale();
   </script>
+  <script src="assets/js/audio-player.js"></script>
+  <script>
+    window.SpaceMungAudio.initPageAudio();
+  </script>
   
   <script src="assets/js/three.js/r134/three.min.js"></script>
   <script src="assets/js/controls/OrbitControls.js"></script>
@@ -74,12 +78,12 @@
     const loader = new THREE.TextureLoader();
 
     const planetsData = [
-      { nameKey: "planets.mercury", r: 0.8,  dist: 14, speed: 4.1,  tex: "assets/images/Solarsystemscope_texture_2k_mercury.jpg" },
-      { nameKey: "planets.venus", r: 1.6,  dist: 20, speed: 1.6,  tex: "assets/images/960px-Solarsystemscope_texture_2k_venus_surface.jpg" },
-      { nameKey: "planets.earth", r: 1.8,  dist: 28, speed: 1.0,  tex: "assets/images/960px-Solarsystemscope_texture_2k_earth_daymap.jpg" },
+      { nameKey: "planets.mercury", r: 0.8,  dist: 14, speed: 4.1,  tex: "assets/images/8k_mercury.jpg" },
+      { nameKey: "planets.venus", r: 1.6,  dist: 20, speed: 1.6,  tex: "assets/images/4k_venus_atmosphere.jpg" },
+      { nameKey: "planets.earth", r: 1.8,  dist: 28, speed: 1.0,  tex: "assets/images/Solarsystemscope_texture_8k_earth_daymap" },
       { nameKey: "planets.mars", r: 1.25, dist: 37, speed: 0.53, tex: "assets/images/Solarsystemscope_texture_8k_mars.jpg" },
-      { nameKey: "planets.jupiter", r: 4.5,  dist: 60, speed: 0.084,tex: "assets/images/960px-Solarsystemscope_texture_2k_jupiter.jpg" },
-      { nameKey: "planets.saturn", r: 3.8,  dist: 85, speed: 0.034,tex: "assets/images/960px-Solarsystemscope_texture_2k_saturn.jpg" }
+      { nameKey: "planets.jupiter", r: 4.5,  dist: 60, speed: 0.084,tex: "assets/images/Solarsystemscope_texture_2k_jupiter.jpg" },
+      { nameKey: "planets.saturn", r: 3.8,  dist: 85, speed: 0.034,tex: "assets/images/8k_saturn.jpg" }
     ];
 
     const planetMeshes = [];
@@ -150,7 +154,7 @@
     const saturnRing = new THREE.Mesh(
       saturnRingGeo,
       new THREE.MeshBasicMaterial({
-        map: loader.load('assets/images/960px-Solarsystemscope_texture_2k_saturn_ring_alpha.png'),
+        map: loader.load('assets/images/8k_saturn_ring_alpha.png'),
         side: THREE.DoubleSide,
         transparent: true,
         alphaTest: 0.01,
