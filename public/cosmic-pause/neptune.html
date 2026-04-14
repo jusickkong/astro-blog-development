@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>해왕성</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #000; }
+    canvas { display: block; }
+    #info {
+      position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 15px; right: 15px; color: #bbd9ff;
+      font-family: Arial, sans-serif; font-size: 13px;
+      pointer-events: none; line-height: 1.5;
+    }
+    @media (max-width: 640px) {
+      #info { font-size: 12px; }
+    }
+  </style>
+</head>
+<body data-title-key="pages.neptune.title">
+  <div id="info" data-i18n="pages.neptune.info">해왕성 · 짙고 깊은 푸른빛이 느리게 흐르는 얼음 행성</div>
+
+  <script src="assets/js/i18n.js"></script>
+  <script>
+    window.SpaceMungI18n.applyLocale();
+  </script>
+  <script src="assets/js/audio-player.js"></script>
+  <script>
+    window.SpaceMungAudio.initPageAudio();
+  </script>
+
+  <script src="assets/js/three.js/r134/three.min.js"></script>
+  <script src="assets/js/controls/OrbitControls.js"></script>
+
+  <script>
+    const PLANET_RADIUS = 9.2;
+    const CAMERA_DIRECTION = new THREE.Vector3(0, 0.24, 1).normalize();
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 2000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.06;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(7600);
+    for (let i = 0; i < starPos.length; i++) {
+      starPos[i] = (Math.random() - 0.5) * 1750;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    scene.add(new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({ color: 0xffffff, size: 0.4 })
+    ));
+
+    const sunLight = new THREE.DirectionalLight(0xdce6ff, 2.35);
+    sunLight.position.set(52, 20, 44);
+    scene.add(sunLight);
+    scene.add(new THREE.AmbientLight(0x132547, 0.58));
+
+    const loader = new THREE.TextureLoader();
+    const neptuneTexture = loader.load('assets/images/2k_neptune.jpg');
+    neptuneTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    const neptune = new THREE.Mesh(
+      new THREE.SphereGeometry(PLANET_RADIUS, 160, 160),
+      new THREE.MeshPhongMaterial({
+        map: neptuneTexture,
+        shininess: 10,
+        specular: 0x1b2342
+      })
+    );
+    scene.add(neptune);
+
+    function fitCameraToSphere(radius, padding) {
+      const vFov = THREE.MathUtils.degToRad(camera.fov);
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+      const distanceForHeight = (radius * padding) / Math.tan(vFov / 2);
+      const distanceForWidth = (radius * padding) / Math.tan(hFov / 2);
+      return Math.max(distanceForHeight, distanceForWidth);
+    }
+
+    function updateViewport() {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+
+      const isMobile = innerWidth < 768;
+      const distance = fitCameraToSphere(PLANET_RADIUS, isMobile ? 1.46 : 1.14);
+      camera.position.copy(CAMERA_DIRECTION).multiplyScalar(distance);
+      controls.minDistance = distance * 0.86;
+      controls.maxDistance = distance * 3;
+    }
+
+    updateViewport();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      neptune.rotation.y += 0.00115;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', updateViewport);
+  </script>
+</body>
+</html>
