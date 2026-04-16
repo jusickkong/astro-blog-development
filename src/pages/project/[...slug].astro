@@ -1,10 +1,11 @@
 ---
-import { Image } from 'astro:assets';
-import { type CollectionEntry, getCollection, render } from 'astro:content';
+import { getAllProjectPosts, getProjectPost } from '../../lib/sanity';
+import { urlFor } from '../../lib/urlFor';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
+import PortableText from '../../components/PortableText.astro';
 import ProjectPost from '../../layouts/ProjectPost.astro';
 
 type ProjectPageProps = {
@@ -14,21 +15,16 @@ type ProjectPageProps = {
 
 type PostPageProps = {
 	kind: 'post';
-	post: CollectionEntry<'project'>;
+	projectSlug: string;
+	postSlug: string;
 };
 
 type Props = ProjectPageProps | PostPageProps;
 
 export async function getStaticPaths() {
-	const posts = await getCollection('project');
-	const projectSlugs = [
-		...new Set(
-			posts
-				.filter((post) => post.id.includes('/'))
-				.map((post) => post.id.split('/')[0])
-				.filter(Boolean),
-		),
-	];
+	const posts = await getAllProjectPosts();
+
+	const projectSlugs = [...new Set(posts.map((p) => p.projectSlug).filter(Boolean))];
 
 	return [
 		...projectSlugs.map((projectSlug) => ({
@@ -36,8 +32,12 @@ export async function getStaticPaths() {
 			props: { kind: 'project', projectSlug } as ProjectPageProps,
 		})),
 		...posts.map((post) => ({
-			params: { slug: post.id },
-			props: { kind: 'post', post } as PostPageProps,
+			params: { slug: `${post.projectSlug}/${post.postSlug.current}` },
+			props: {
+				kind: 'post',
+				projectSlug: post.projectSlug,
+				postSlug: post.postSlug.current,
+			} as PostPageProps,
 		})),
 	];
 }
@@ -45,46 +45,49 @@ export async function getStaticPaths() {
 const props = Astro.props as Props;
 const isProjectPage = props.kind === 'project';
 
-let post: CollectionEntry<'project'> | null = null;
-let Content: Awaited<ReturnType<typeof render>>['Content'] | null = null;
+const allPosts = await getAllProjectPosts();
 
+let post = null;
 let projectSlug = '';
-let projectPosts: CollectionEntry<'project'>[] = [];
-let latestPost: CollectionEntry<'project'> | null = null;
-let heroPost: CollectionEntry<'project'> | null = null;
-let summaryPost: CollectionEntry<'project'> | null = null;
+let projectPosts: typeof allPosts = [];
+let latestPost: (typeof allPosts)[0] | null = null;
+let heroPost: (typeof allPosts)[0] | null = null;
+let summaryPost: (typeof allPosts)[0] | null = null;
 
 if (isProjectPage) {
 	projectSlug = props.projectSlug;
-	projectPosts = (await getCollection('project'))
-		.filter((entry) => entry.id.startsWith(`${projectSlug}/`))
-		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+	projectPosts = allPosts
+		.filter((p) => p.projectSlug === projectSlug)
+		.sort((a, b) => new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf());
 
 	latestPost = projectPosts[0] ?? null;
-	heroPost = projectPosts.find((entry) => entry.data.heroImage) ?? latestPost;
+	heroPost = projectPosts.find((p) => p.heroImage) ?? latestPost;
 	summaryPost =
-		projectPosts.find(
-			(entry) => entry.data.description && entry.data.description.trim().length > 0,
-		) ?? latestPost;
+		projectPosts.find((p) => p.description && p.description.trim().length > 0) ?? latestPost;
 } else {
-	post = props.post;
-	const rendered = await render(post);
-	Content = rendered.Content;
+	post = await getProjectPost(props.projectSlug, props.postSlug);
 }
 ---
 
 {
-	!isProjectPage && post && Content ? (
-		<ProjectPost {...post.data}>
-			<Content />
+	!isProjectPage && post ? (
+		<ProjectPost
+			title={post.title}
+			description={post.description}
+			metaDescription={post.metaDescription}
+			pubDate={new Date(post.pubDate)}
+			updatedDate={post.updatedDate ? new Date(post.updatedDate) : undefined}
+			heroImageUrl={post.heroImage ? urlFor(post.heroImage).width(360).url() : undefined}
+		>
+			{post.body && <PortableText value={post.body} />}
 		</ProjectPost>
 	) : (
 		<html lang="en">
 			<head>
 				<BaseHead
 					title={`${projectSlug} | Project`}
-					description={summaryPost?.data.description || `${projectSlug} project posts`}
-					metaDescription={summaryPost?.data.metaDescription}
+					description={summaryPost?.description || `${projectSlug} project posts`}
+					metaDescription={summaryPost?.metaDescription}
 				/>
 				<style>
 					main {
@@ -190,7 +193,9 @@ if (isProjectPage) {
 						background: rgba(255, 255, 255, 0.84);
 						color: inherit;
 						text-decoration: none;
-						transition: border-color 0.18s ease, box-shadow 0.18s ease;
+						transition:
+							border-color 0.18s ease,
+							box-shadow 0.18s ease;
 					}
 					.post-item a:hover {
 						border-color: rgba(var(--accent), 0.26);
@@ -251,8 +256,12 @@ if (isProjectPage) {
 				<main>
 					<section class="project-hero">
 						<div class="hero-art">
-							{heroPost?.data.heroImage ? (
-								<Image src={heroPost.data.heroImage} width={260} alt="" />
+							{heroPost?.heroImage ? (
+								<img
+									src={urlFor(heroPost.heroImage).width(260).height(260).fit('crop').url()}
+									width="260"
+									alt=""
+								/>
 							) : (
 								<span class="badge">No image</span>
 							)}
@@ -261,56 +270,50 @@ if (isProjectPage) {
 							<div class="hero-meta">
 								<span class="badge">Project</span>
 								<span>{projectPosts.length} posts</span>
-								{
-									latestPost && (
-										<span>
-											Last updated <FormattedDate date={latestPost.data.pubDate} />
-										</span>
-									)
-								}
+								{latestPost && (
+									<span>
+										Last updated <FormattedDate date={new Date(latestPost.pubDate)} />
+									</span>
+								)}
 							</div>
 							<h1>{projectSlug}</h1>
 							<p class="hero-desc">
-								{summaryPost?.data.description || 'This project does not have a summary yet.'}
+								{summaryPost?.description || 'This project does not have a summary yet.'}
 							</p>
-							{
-								latestPost && (
-									<div class="hero-actions">
-										<a
-											class="primary"
-											href={`/project/${latestPost.id}/`}
-										>
-											Open latest post
-										</a>
-									</div>
-								)
-							}
+							{latestPost && (
+								<div class="hero-actions">
+									<a
+										class="primary"
+										href={`/project/${latestPost.projectSlug}/${latestPost.postSlug.current}/`}
+									>
+										Open latest post
+									</a>
+								</div>
+							)}
 						</div>
 					</section>
 
 					<section class="post-section">
 						<h2>Posts</h2>
-						{
-							projectPosts.length > 0 ? (
-								<ul class="post-list">
-									{projectPosts.map((entry) => (
-										<li class="post-item">
-											<a href={`/project/${entry.id}/`}>
-												<div class="post-main">
-													<h3>{entry.data.title}</h3>
-													<p>{entry.data.description || 'No description provided.'}</p>
-												</div>
-												<div class="post-date">
-													<FormattedDate date={entry.data.pubDate} />
-												</div>
-											</a>
-										</li>
-									))}
-								</ul>
-							) : (
-								<p class="empty-state">No posts found for this project.</p>
-							)
-						}
+						{projectPosts.length > 0 ? (
+							<ul class="post-list">
+								{projectPosts.map((entry) => (
+									<li class="post-item">
+										<a href={`/project/${entry.projectSlug}/${entry.postSlug.current}/`}>
+											<div class="post-main">
+												<h3>{entry.title}</h3>
+												<p>{entry.description || 'No description provided.'}</p>
+											</div>
+											<div class="post-date">
+												<FormattedDate date={new Date(entry.pubDate)} />
+											</div>
+										</a>
+									</li>
+								))}
+							</ul>
+						) : (
+							<p class="empty-state">No posts found for this project.</p>
+						)}
 					</section>
 				</main>
 				<Footer />

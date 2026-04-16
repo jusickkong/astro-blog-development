@@ -1,23 +1,27 @@
 ---
-import { type CollectionEntry, getCollection, render } from 'astro:content';
+import { getAllThoughts, getThought } from '../../lib/sanity';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
+import PortableText from '../../components/PortableText.astro';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('thoughts');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: { post },
+	const thoughts = await getAllThoughts();
+	return thoughts.map((thought) => ({
+		params: { slug: thought.slug.current },
+		props: { slug: thought.slug.current },
 	}));
 }
 
-type Props = { post: CollectionEntry<'thoughts'> };
+type Props = { slug: string };
 
-const { post } = Astro.props;
-const { Content } = await render(post);
-const { title, description, metaDescription, pubDate, updatedDate } = post.data;
+const { slug } = Astro.props;
+const thought = await getThought(slug);
+
+if (!thought) return Astro.redirect('/thoughts/');
+
+const { title, description, metaDescription, pubDate, updatedDate, body } = thought;
 ---
 
 <html lang="en">
@@ -68,24 +72,24 @@ const { title, description, metaDescription, pubDate, updatedDate } = post.data;
 	</head>
 	<body>
 		<Header />
-		<main>			
+		<main>
 			<article>
 				<div class="prose">
-					<div class="title">						
+					<div class="title">
 						<h1>{title}</h1>
 						<div class="date">
-							<FormattedDate date={pubDate} />
+							<FormattedDate date={new Date(pubDate)} />
 							{
 								updatedDate && (
 									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
+										Last updated on <FormattedDate date={new Date(updatedDate)} />
 									</div>
 								)
 							}
 						</div>
 						<hr />
 					</div>
-					<Content />
+					{body && <PortableText value={body} />}
 				</div>
 			</article>
 		</main>

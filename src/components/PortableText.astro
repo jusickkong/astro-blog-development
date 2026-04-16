@@ -1,0 +1,208 @@
+---
+/**
+ * Sanity Portable Text → HTML 렌더러
+ * React 없이 Astro에서 직접 Portable Text를 렌더링합니다.
+ */
+import { urlFor } from '../lib/urlFor';
+import type { SanityImage } from '../lib/sanity';
+
+type Mark = {
+	_key: string;
+	_type: string;
+	href?: string;
+	blank?: boolean;
+};
+
+type Span = {
+	_type: 'span';
+	_key: string;
+	text: string;
+	marks: string[];
+};
+
+type ImageBlock = {
+	_type: 'image';
+	_key: string;
+	asset: SanityImage['asset'];
+	hotspot?: SanityImage['hotspot'];
+	alt?: string;
+	caption?: string;
+};
+
+type TextBlock = {
+	_type: 'block';
+	_key: string;
+	style?: string;
+	children: Span[];
+	markDefs: Mark[];
+	listItem?: string;
+	level?: number;
+};
+
+type Block = TextBlock | ImageBlock | { _type: string; _key: string; [key: string]: unknown };
+
+interface Props {
+	value: Block[];
+}
+
+const { value } = Astro.props;
+
+function escapeHtml(str: string): string {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
+}
+
+function renderSpan(span: Span, markDefs: Mark[]): string {
+	let text = escapeHtml(span.text);
+
+	// 마크 순서: 어노테이션(링크 등) → 데코레이터(볼드 등)
+	for (const mark of span.marks) {
+		const def = markDefs.find((m) => m._key === mark);
+		if (def) {
+			if (def._type === 'link') {
+				const target = def.blank ? ' target="_blank" rel="noopener noreferrer"' : '';
+				text = `<a href="${escapeHtml(def.href ?? '')}"${target}>${text}</a>`;
+			}
+		} else {
+			switch (mark) {
+				case 'strong':
+					text = `<strong>${text}</strong>`;
+					break;
+				case 'em':
+					text = `<em>${text}</em>`;
+					break;
+				case 'code':
+					text = `<code>${text}</code>`;
+					break;
+				case 'underline':
+					text = `<u>${text}</u>`;
+					break;
+				case 'strike-through':
+					text = `<s>${text}</s>`;
+					break;
+			}
+		}
+	}
+	return text;
+}
+
+function renderTextBlock(block: TextBlock): string {
+	const markDefs = block.markDefs ?? [];
+	const inner = (block.children ?? [])
+		.map((child) => (child._type === 'span' ? renderSpan(child, markDefs) : ''))
+		.join('');
+
+	if (!inner.trim()) return '';
+
+	const style = block.style ?? 'normal';
+
+	// 리스트 아이템은 별도 처리
+	if (block.listItem === 'bullet') return `<li>${inner}</li>`;
+	if (block.listItem === 'number') return `<li>${inner}</li>`;
+
+	switch (style) {
+		case 'h1':
+			return `<h1>${inner}</h1>`;
+		case 'h2':
+			return `<h2>${inner}</h2>`;
+		case 'h3':
+			return `<h3>${inner}</h3>`;
+		case 'h4':
+			return `<h4>${inner}</h4>`;
+		case 'h5':
+			return `<h5>${inner}</h5>`;
+		case 'h6':
+			return `<h6>${inner}</h6>`;
+		case 'blockquote':
+			return `<blockquote>${inner}</blockquote>`;
+		default:
+			return `<p>${inner}</p>`;
+	}
+}
+
+function renderImageBlock(block: ImageBlock): string {
+	const src = urlFor(block as unknown as SanityImage).width(800).url();
+	const alt = escapeHtml(block.alt ?? '');
+	const caption = block.caption ? `<figcaption>${escapeHtml(block.caption)}</figcaption>` : '';
+	return `<figure><img src="${src}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+}
+
+// 리스트 블록 연속인 것을 <ul>/<ol>로 묶기
+function groupBlocks(blocks: Block[]): string[] {
+	const result: string[] = [];
+	let ulBuffer: string[] = [];
+	let olBuffer: string[] = [];
+
+	function flushUl() {
+		if (ulBuffer.length) {
+			result.push(`<ul>${ulBuffer.join('')}</ul>`);
+			ulBuffer = [];
+		}
+	}
+	function flushOl() {
+		if (olBuffer.length) {
+			result.push(`<ol>${olBuffer.join('')}</ol>`);
+			olBuffer = [];
+		}
+	}
+
+	for (const block of blocks) {
+		if (block._type === 'image') {
+			flushUl();
+			flushOl();
+			result.push(renderImageBlock(block as ImageBlock));
+			continue;
+		}
+
+		if (block._type === 'block') {
+			const b = block as TextBlock;
+			if (b.listItem === 'bullet') {
+				flushOl();
+				ulBuffer.push(renderTextBlock(b));
+				continue;
+			}
+			if (b.listItem === 'number') {
+				flushUl();
+				olBuffer.push(renderTextBlock(b));
+				continue;
+			}
+			flushUl();
+			flushOl();
+			result.push(renderTextBlock(b));
+			continue;
+		}
+
+		flushUl();
+		flushOl();
+	}
+
+	flushUl();
+	flushOl();
+
+	return result;
+}
+
+const html = value ? groupBlocks(value).join('\n') : '';
+---
+
+<Fragment set:html={html} />
+
+<style>
+	:global(.prose) figure {
+		margin: 1.5rem 0;
+		text-align: center;
+	}
+	:global(.prose) figure img {
+		max-width: 100%;
+		border-radius: 8px;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+	}
+	:global(.prose) figcaption {
+		margin-top: 0.5rem;
+		font-size: 0.875rem;
+		color: rgb(var(--gray));
+	}
+</style>
