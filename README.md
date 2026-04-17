@@ -53,7 +53,9 @@ All commands are run from the root of the project, from a terminal:
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 | `npx @tinacms/cli dev -c "astro dev --host"` | Get help using the Astro CLI  |
-| `npx astro check`         | Get help using the Astro CLI                     |
+| `npx sanity@latest deploy`         | sanity deploy  (latest version)                   |
+| `npx sanity deploy`         | sanity deploy                     |
+| `npx sanity dev`         | sanity local                    |
 
 
 ## 👀 Want to learn more?

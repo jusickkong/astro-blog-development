@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity';
+import { bodyField } from './bodyField';
 
 export const projectPost = defineType({
 	name: 'projectPost',
@@ -6,17 +7,24 @@ export const projectPost = defineType({
 	type: 'document',
 	fields: [
 		defineField({
-			name: 'projectSlug',
-			title: '프로젝트 이름',
-			type: 'string',
-			description: '프로젝트 폴더명 (예: 캐시백트래커)',
+			name: 'project',
+			title: '프로젝트',
+			type: 'reference',
+			to: [{ type: 'project' }],
+			description: '소속 프로젝트를 선택하세요',
 			validation: (Rule) => Rule.required(),
+		}),
+		defineField({
+			name: 'projectSlug',
+			title: 'projectSlug (구버전)',
+			type: 'string',
+			hidden: true, // 에디터에서 숨김 - 마이그레이션 후 데이터 정리용
 		}),
 		defineField({
 			name: 'postSlug',
 			title: '글 슬러그',
 			type: 'slug',
-			description: 'URL 경로 (예: 개요 → /project/캐시백트래커/개요/)',
+			description: '글 이름만 입력 (예: 개요, 앱-사용법) — URL은 /project/[프로젝트]/[슬러그]/ 로 자동 조합',
 			options: { source: 'title', maxLength: 200 },
 			validation: (Rule) => Rule.required(),
 		}),
@@ -64,74 +72,12 @@ export const projectPost = defineType({
 				},
 			],
 		}),
-		defineField({
-			name: 'body',
-			title: '본문',
-			type: 'array',
-			of: [
-				{
-					type: 'block',
-					styles: [
-						{ title: '본문', value: 'normal' },
-						{ title: 'H1', value: 'h1' },
-						{ title: 'H2', value: 'h2' },
-						{ title: 'H3', value: 'h3' },
-						{ title: 'H4', value: 'h4' },
-						{ title: '인용구', value: 'blockquote' },
-					],
-					marks: {
-						decorators: [
-							{ title: '굵게', value: 'strong' },
-							{ title: '기울임', value: 'em' },
-							{ title: '코드', value: 'code' },
-							{ title: '밑줄', value: 'underline' },
-							{ title: '취소선', value: 'strike-through' },
-						],
-						annotations: [
-							{
-								name: 'link',
-								type: 'object',
-								title: '링크',
-								fields: [
-									{
-										name: 'href',
-										type: 'url',
-										title: 'URL',
-										validation: (Rule) =>
-											Rule.uri({ scheme: ['http', 'https', 'mailto'] }),
-									},
-									{
-										name: 'blank',
-										type: 'boolean',
-										title: '새 탭에서 열기',
-									},
-								],
-							},
-						],
-					},
-				},
-				{
-					type: 'image',
-					options: { hotspot: true },
-					fields: [
-						{
-							name: 'alt',
-							type: 'string',
-							title: 'Alt 텍스트',
-						},
-						{
-							name: 'caption',
-							type: 'string',
-							title: '이미지 설명',
-						},
-					],
-				},
-			],
-		}),
+		defineField(bodyField as any),
 	],
 	preview: {
 		select: {
 			title: 'title',
+			projectName: 'project.name',
 			projectSlug: 'projectSlug',
 			media: 'heroImage',
 		},
@@ -139,7 +85,7 @@ export const projectPost = defineType({
 		prepare(selection: any) {
 			return {
 				title: selection.title as string | undefined,
-				subtitle: selection.projectSlug as string | undefined,
+				subtitle: (selection.projectName || selection.projectSlug) as string | undefined,
 				media: selection.media,
 			};
 		},

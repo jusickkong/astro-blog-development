@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity';
+import { bodyField } from './bodyField';
 
 export const thought = defineType({
 	name: 'thought',
@@ -42,70 +43,7 @@ export const thought = defineType({
 			title: '수정일',
 			type: 'datetime',
 		}),
-		defineField({
-			name: 'body',
-			title: '본문',
-			type: 'array',
-			of: [
-				{
-					type: 'block',
-					styles: [
-						{ title: '본문', value: 'normal' },
-						{ title: 'H1', value: 'h1' },
-						{ title: 'H2', value: 'h2' },
-						{ title: 'H3', value: 'h3' },
-						{ title: 'H4', value: 'h4' },
-						{ title: '인용구', value: 'blockquote' },
-					],
-					marks: {
-						decorators: [
-							{ title: '굵게', value: 'strong' },
-							{ title: '기울임', value: 'em' },
-							{ title: '코드', value: 'code' },
-							{ title: '밑줄', value: 'underline' },
-							{ title: '취소선', value: 'strike-through' },
-						],
-						annotations: [
-							{
-								name: 'link',
-								type: 'object',
-								title: '링크',
-								fields: [
-									{
-										name: 'href',
-										type: 'url',
-										title: 'URL',
-										validation: (Rule) =>
-											Rule.uri({ scheme: ['http', 'https', 'mailto'] }),
-									},
-									{
-										name: 'blank',
-										type: 'boolean',
-										title: '새 탭에서 열기',
-									},
-								],
-							},
-						],
-					},
-				},
-				{
-					type: 'image',
-					options: { hotspot: true },
-					fields: [
-						{
-							name: 'alt',
-							type: 'string',
-							title: 'Alt 텍스트',
-						},
-						{
-							name: 'caption',
-							type: 'string',
-							title: '이미지 설명',
-						},
-					],
-				},
-			],
-		}),
+		defineField(bodyField as any),
 	],
 	preview: {
 		select: {

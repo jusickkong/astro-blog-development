@@ -52,7 +52,9 @@ export type Thought = {
 export async function getAllProjectPosts(): Promise<ProjectPost[]> {
 	return client.fetch(
 		`*[_type == "projectPost"] | order(pubDate desc) {
-      _id, projectSlug, postSlug, title, description, metaDescription,
+      _id,
+      "projectSlug": coalesce(project->name, projectSlug),
+      postSlug, title, description, metaDescription,
       pubDate, updatedDate, heroImage
     }`,
 	);
@@ -63,8 +65,10 @@ export async function getProjectPost(
 	postSlug: string,
 ): Promise<ProjectPost | null> {
 	return client.fetch(
-		`*[_type == "projectPost" && projectSlug == $projectSlug && postSlug.current == $postSlug][0] {
-      _id, projectSlug, postSlug, title, description, metaDescription,
+		`*[_type == "projectPost" && coalesce(project->name, projectSlug) == $projectSlug && postSlug.current == $postSlug][0] {
+      _id,
+      "projectSlug": coalesce(project->name, projectSlug),
+      postSlug, title, description, metaDescription,
       pubDate, updatedDate, heroImage, body
     }`,
 		{ projectSlug, postSlug },

@@ -8,12 +8,14 @@
     "preview": "astro preview",
     "astro": "astro",
     "sanity": "sanity",
-    "migrate": "node --env-file=.env scripts/migrate-to-sanity.mjs"
+    "migrate": "node --env-file=.env scripts/migrate-to-sanity.mjs",
+    "link-projects": "node --env-file=.env scripts/link-projects.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.15",
     "@astrojs/sitemap": "^3.7.0",
     "@sanity/client": "^7.21.0",
+    "@sanity/code-input": "^7.1.0",
     "@sanity/image-url": "^2.1.1",
     "astro": "^5.17.1",
     "sharp": "^0.34.3",

@@ -11,6 +11,7 @@ type Mark = {
 	_type: string;
 	href?: string;
 	blank?: boolean;
+	color?: string;
 };
 
 type Span = {
@@ -27,6 +28,16 @@ type ImageBlock = {
 	hotspot?: SanityImage['hotspot'];
 	alt?: string;
 	caption?: string;
+	align?: 'left' | 'center' | 'right';
+	width?: 'sm' | 'md' | 'lg' | 'full';
+};
+
+type CodeBlock = {
+	_type: 'code';
+	_key: string;
+	code?: string;
+	language?: string;
+	filename?: string;
 };
 
 type TextBlock = {
@@ -39,7 +50,7 @@ type TextBlock = {
 	level?: number;
 };
 
-type Block = TextBlock | ImageBlock | { _type: string; _key: string; [key: string]: unknown };
+type Block = TextBlock | ImageBlock | CodeBlock | { _type: string; _key: string; [key: string]: unknown };
 
 interface Props {
 	value: Block[];
@@ -65,6 +76,10 @@ function renderSpan(span: Span, markDefs: Mark[]): string {
 			if (def._type === 'link') {
 				const target = def.blank ? ' target="_blank" rel="noopener noreferrer"' : '';
 				text = `<a href="${escapeHtml(def.href ?? '')}"${target}>${text}</a>`;
+			} else if (def._type === 'textColor' && def.color) {
+				text = `<span style="color:${escapeHtml(def.color)}">${text}</span>`;
+			} else if (def._type === 'highlight' && def.color) {
+				text = `<mark style="background-color:${escapeHtml(def.color)};padding:0.1em 0.2em;border-radius:3px">${text}</mark>`;
 			}
 		} else {
 			switch (mark) {
@@ -123,11 +138,24 @@ function renderTextBlock(block: TextBlock): string {
 	}
 }
 
+const widthMap: Record<string, number> = { sm: 400, md: 600, lg: 800, full: 1200 };
+
 function renderImageBlock(block: ImageBlock): string {
-	const src = urlFor(block as unknown as SanityImage).width(800).url();
+	const w = widthMap[block.width ?? 'lg'] ?? 800;
+	const src = urlFor(block as unknown as SanityImage).width(w).url();
 	const alt = escapeHtml(block.alt ?? '');
 	const caption = block.caption ? `<figcaption>${escapeHtml(block.caption)}</figcaption>` : '';
-	return `<figure><img src="${src}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+	const align = block.align ?? 'center';
+	const alignStyle = align === 'left' ? 'margin-right:auto' : align === 'right' ? 'margin-left:auto' : 'margin-left:auto;margin-right:auto';
+	const maxWidth = block.width === 'full' ? '100%' : `${w}px`;
+	return `<figure style="text-align:${align};max-width:${maxWidth};${alignStyle}"><img src="${src}" alt="${alt}" loading="lazy" style="max-width:100%" />${caption}</figure>`;
+}
+
+function renderCodeBlock(block: CodeBlock): string {
+	const code = escapeHtml(block.code ?? '');
+	const lang = escapeHtml(block.language ?? 'text');
+	const filename = block.filename ? `<div class="code-filename">${escapeHtml(block.filename)}</div>` : '';
+	return `<div class="code-block">${filename}<pre data-language="${lang}"><code class="language-${lang}">${code}</code></pre></div>`;
 }
 
 // 리스트 블록 연속인 것을 <ul>/<ol>로 묶기
@@ -154,6 +182,13 @@ function groupBlocks(blocks: Block[]): string[] {
 			flushUl();
 			flushOl();
 			result.push(renderImageBlock(block as ImageBlock));
+			continue;
+		}
+
+		if (block._type === 'code') {
+			flushUl();
+			flushOl();
+			result.push(renderCodeBlock(block as CodeBlock));
 			continue;
 		}
 
@@ -204,5 +239,31 @@ const html = value ? groupBlocks(value).join('\n') : '';
 		margin-top: 0.5rem;
 		font-size: 0.875rem;
 		color: rgb(var(--gray));
+	}
+	:global(.prose) .code-block {
+		margin: 1.5rem 0;
+		border-radius: 8px;
+		overflow: hidden;
+		background: #1e1e2e;
+	}
+	:global(.prose) .code-filename {
+		padding: 0.4rem 1rem;
+		font-size: 0.8rem;
+		font-family: monospace;
+		color: #a6adc8;
+		background: #181825;
+		border-bottom: 1px solid #313244;
+	}
+	:global(.prose) .code-block pre {
+		margin: 0;
+		padding: 1.25rem 1.5rem;
+		overflow-x: auto;
+	}
+	:global(.prose) .code-block code {
+		font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+		font-size: 0.9rem;
+		line-height: 1.6;
+		color: #cdd6f4;
+		background: none;
 	}
 </style>
