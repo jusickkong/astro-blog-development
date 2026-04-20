@@ -18,7 +18,12 @@ const { title, description, metaDescription, pubDate, updatedDate, heroImageUrl 
 
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description ?? title} metaDescription={metaDescription} />
+		<BaseHead
+			title={title}
+			description={description ?? title}
+			metaDescription={metaDescription}
+			image={heroImageUrl}
+		/>
 		<style>
 			main {
 				width: calc(100% - 2em);

@@ -1,8 +1,12 @@
+import { codeInput } from '@sanity/code-input';
 import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
-import { codeInput } from '@sanity/code-input';
-import { schemaTypes } from './src/sanity/schemaTypes';
 import { wideLayoutPlugin } from './src/sanity/plugins/wideLayout';
+import { schemaTypes } from './src/sanity/schemaTypes';
+
+function formatDraftSuffix(draftCount: number) {
+	return draftCount > 0 ? ` (${draftCount} draft${draftCount === 1 ? '' : 's'})` : '';
+}
 
 export default defineConfig({
 	name: 'dev-outpost',
@@ -19,45 +23,74 @@ export default defineConfig({
 				const { getClient } = context;
 				const client = getClient({ apiVersion: '2024-01-01' });
 
-				// 모든 project 문서 가져오기
 				const projects = await client.fetch(
-					`*[_type == "project"] | order(name asc) { _id, name }`,
+					`*[_type == "project"] | order(name asc) {
+						_id,
+						name,
+						"draftCount": count(*[
+							_type == "projectPost" &&
+							_id in path("drafts.**") &&
+							(project._ref == ^._id || projectSlug == ^.name)
+						])
+					}`,
+				);
+
+				const allProjectDraftCount = await client.fetch(
+					`count(*[_type == "projectPost" && _id in path("drafts.**")])`,
+				);
+
+				const thoughtDraftCount = await client.fetch(
+					`count(*[_type == "thought" && _id in path("drafts.**")])`,
 				);
 
 				return S.list()
 					.id('root')
 					.title('콘텐츠')
 					.items([
-						// Projects → 프로젝트별 글 목록
 						S.listItem()
 							.id('projects')
-							.title('Projects')
+							.title(`Projects${formatDraftSuffix(allProjectDraftCount)}`)
 							.child(
 								S.list()
 									.id('project-list')
-									.title('Projects')
+									.title(`Projects${formatDraftSuffix(allProjectDraftCount)}`)
 									.items([
-										// 각 프로젝트를 클릭하면 해당 프로젝트의 글 목록
-										...projects.map((project: { _id: string; name: string }) =>
-											S.listItem()
-												.id(project._id)
-												.title(project.name)
-												.child(
-													S.documentList()
-														.id(`posts-${project._id}`)
-														.title(project.name)
-														.filter(
-															'_type == "projectPost" && (project._ref == $projectId || projectSlug == $projectName)'
-														)
-														.params({
-															projectId: project._id,
-															projectName: project.name,
-														})
-														.defaultOrdering([{ field: 'pubDate', direction: 'desc' }])
-												)
+										...projects.map(
+											(project: { _id: string; name: string; draftCount: number }) =>
+												S.listItem()
+													.id(project._id)
+													.title(`${project.name}${formatDraftSuffix(project.draftCount)}`)
+													.child(
+														S.documentList()
+															.id(`posts-${project._id}`)
+															.title(
+																`${project.name}${formatDraftSuffix(project.draftCount)}`,
+															)
+															.filter(
+																'_type == "projectPost" && (project._ref == $projectId || projectSlug == $projectName)',
+															)
+															.params({
+																projectId: project._id,
+																projectName: project.name,
+															})
+															.defaultOrdering([
+																{ field: 'pubDate', direction: 'desc' },
+															]),
+													),
 										),
 										S.divider(),
-										// 전체 글 보기
+										S.listItem()
+											.id('draft-project-posts')
+											.title(`Drafts${formatDraftSuffix(allProjectDraftCount)}`)
+											.child(
+												S.documentList()
+													.id('all-draft-project-posts')
+													.title(`Project Drafts${formatDraftSuffix(allProjectDraftCount)}`)
+													.filter('_type == "projectPost" && _id in path("drafts.**")')
+													.defaultOrdering([
+														{ field: '_updatedAt', direction: 'desc' },
+													]),
+											),
 										S.listItem()
 											.id('all-posts')
 											.title('전체 글')
@@ -66,21 +99,21 @@ export default defineConfig({
 													.id('all-project-posts')
 													.title('전체 Project Posts')
 													.filter('_type == "projectPost"')
-													.defaultOrdering([{ field: 'pubDate', direction: 'desc' }])
+													.defaultOrdering([
+														{ field: 'pubDate', direction: 'desc' },
+													]),
 											),
-									])
+									]),
 							),
-
-						// Thoughts
 						S.listItem()
 							.id('thought')
-							.title('Thoughts')
+							.title(`Thoughts${formatDraftSuffix(thoughtDraftCount)}`)
 							.child(
 								S.documentList()
 									.id('all-thoughts')
-									.title('Thoughts')
+									.title(`Thoughts${formatDraftSuffix(thoughtDraftCount)}`)
 									.filter('_type == "thought"')
-									.defaultOrdering([{ field: 'pubDate', direction: 'desc' }])
+									.defaultOrdering([{ field: 'pubDate', direction: 'desc' }]),
 							),
 					]);
 			},

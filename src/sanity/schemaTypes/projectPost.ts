@@ -1,5 +1,46 @@
+import type { SlugIsUniqueContext } from 'sanity';
 import { defineField, defineType } from 'sanity';
 import { bodyField } from './bodyField';
+
+async function isUniquePostSlug(slug: string, context: SlugIsUniqueContext) {
+	const document = context.document as
+		| {
+				_id?: string;
+				project?: { _ref?: string };
+				projectSlug?: string;
+		  }
+		| undefined;
+
+	const projectRef = document?.project?._ref;
+	const legacyProjectSlug = document?.projectSlug;
+
+	if (!projectRef && !legacyProjectSlug) return true;
+
+	const baseId = document?._id?.replace(/^drafts\./, '');
+	const excludedIds = [document?._id, baseId, baseId ? `drafts.${baseId}` : undefined].filter(
+		Boolean,
+	);
+
+	const client = context.getClient({ apiVersion: '2024-01-01' });
+
+	return client.fetch(
+		`count(*[
+			_type == "projectPost" &&
+			postSlug.current == $slug &&
+			!(_id in $excludedIds) &&
+			(
+				($projectRef != null && project._ref == $projectRef) ||
+				($projectRef == null && $legacyProjectSlug != null && projectSlug == $legacyProjectSlug)
+			)
+		]) == 0`,
+		{
+			slug,
+			excludedIds,
+			projectRef: projectRef ?? null,
+			legacyProjectSlug: legacyProjectSlug ?? null,
+		},
+	);
+}
 
 export const projectPost = defineType({
 	name: 'projectPost',
@@ -25,7 +66,11 @@ export const projectPost = defineType({
 			title: '글 슬러그',
 			type: 'slug',
 			description: '글 이름만 입력 (예: 개요, 앱-사용법) — URL은 /project/[프로젝트]/[슬러그]/ 로 자동 조합',
-			options: { source: 'title', maxLength: 200 },
+			options: {
+				source: 'title',
+				maxLength: 200,
+				isUnique: isUniquePostSlug,
+			},
 			validation: (Rule) => Rule.required(),
 		}),
 		defineField({

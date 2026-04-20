@@ -1,7 +1,6 @@
 ---
 /**
- * Sanity Portable Text → HTML 렌더러
- * React 없이 Astro에서 직접 Portable Text를 렌더링합니다.
+ * Sanity Portable Text를 Astro에서 직접 HTML로 렌더링합니다.
  */
 import { urlFor } from '../lib/urlFor';
 import type { SanityImage } from '../lib/sanity';
@@ -30,6 +29,23 @@ type ImageBlock = {
 	caption?: string;
 	align?: 'left' | 'center' | 'right';
 	width?: 'sm' | 'md' | 'lg' | 'full';
+	widthPx?: number;
+};
+
+type RowImage = {
+	_type: 'image';
+	_key: string;
+	asset: SanityImage['asset'];
+	hotspot?: SanityImage['hotspot'];
+	alt?: string;
+	caption?: string;
+};
+
+type ImageRowBlock = {
+	_type: 'imageRow';
+	_key: string;
+	images?: RowImage[];
+	gap?: 'sm' | 'md' | 'lg';
 };
 
 type CodeBlock = {
@@ -50,7 +66,12 @@ type TextBlock = {
 	level?: number;
 };
 
-type Block = TextBlock | ImageBlock | CodeBlock | { _type: string; _key: string; [key: string]: unknown };
+type Block =
+	| TextBlock
+	| ImageBlock
+	| ImageRowBlock
+	| CodeBlock
+	| { _type: string; _key: string; [key: string]: unknown };
 
 interface Props {
 	value: Block[];
@@ -69,7 +90,6 @@ function escapeHtml(str: string): string {
 function renderSpan(span: Span, markDefs: Mark[]): string {
 	let text = escapeHtml(span.text);
 
-	// 마크 순서: 어노테이션(링크 등) → 데코레이터(볼드 등)
 	for (const mark of span.marks) {
 		const def = markDefs.find((m) => m._key === mark);
 		if (def) {
@@ -101,6 +121,7 @@ function renderSpan(span: Span, markDefs: Mark[]): string {
 			}
 		}
 	}
+
 	return text;
 }
 
@@ -112,13 +133,10 @@ function renderTextBlock(block: TextBlock): string {
 
 	if (!inner.trim()) return '';
 
-	const style = block.style ?? 'normal';
-
-	// 리스트 아이템은 별도 처리
 	if (block.listItem === 'bullet') return `<li>${inner}</li>`;
 	if (block.listItem === 'number') return `<li>${inner}</li>`;
 
-	switch (style) {
+	switch (block.style ?? 'normal') {
 		case 'h1':
 			return `<h1>${inner}</h1>`;
 		case 'h2':
@@ -140,13 +158,45 @@ function renderTextBlock(block: TextBlock): string {
 
 const widthMap: Record<string, number> = { sm: 400, md: 600, lg: 800, full: 1200 };
 
+function getImageFigureStyles(widthPx: number, align: 'left' | 'center' | 'right'): string {
+	const widthStyle = `width:min(100%, ${widthPx}px)`;
+
+	switch (align) {
+		case 'left':
+			return `${widthStyle};margin:1.5rem auto 1.5rem 0;text-align:left`;
+		case 'right':
+			return `${widthStyle};margin:1.5rem 0 1.5rem auto;text-align:right`;
+		default:
+			return `${widthStyle};margin:1.5rem auto;text-align:center`;
+	}
+}
+
 function renderImageBlock(block: ImageBlock): string {
-	const w = widthMap[block.width ?? 'lg'] ?? 800;
-	const src = urlFor(block as unknown as SanityImage).width(w).url();
+	const widthPx = block.widthPx ?? (widthMap[block.width ?? 'lg'] ?? 800);
+	const src = urlFor(block as unknown as SanityImage).width(widthPx).url();
 	const alt = escapeHtml(block.alt ?? '');
 	const caption = block.caption ? `<figcaption>${escapeHtml(block.caption)}</figcaption>` : '';
 	const align = block.align ?? 'center';
-	return `<figure class="img-size-${block.width ?? 'lg'} img-align-${align}"><img src="${src}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+	const style = getImageFigureStyles(widthPx, align);
+	return `<figure class="img-align-${align} custom-image" style="${style}"><img src="${src}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+}
+
+function renderImageRowBlock(block: ImageRowBlock): string {
+	const images = block.images ?? [];
+	if (images.length === 0) return '';
+
+	const items = images
+		.map((image) => {
+			const src = urlFor(image as unknown as SanityImage).width(900).url();
+			const alt = escapeHtml(image.alt ?? '');
+			const caption = image.caption
+				? `<figcaption>${escapeHtml(image.caption)}</figcaption>`
+				: '';
+			return `<figure class="img-row-item"><img src="${src}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+		})
+		.join('');
+
+	return `<div class="img-row gap-${block.gap ?? 'md'} cols-${images.length}">${items}</div>`;
 }
 
 function renderCodeBlock(block: CodeBlock): string {
@@ -156,7 +206,6 @@ function renderCodeBlock(block: CodeBlock): string {
 	return `<div class="code-block">${filename}<pre data-language="${lang}"><code class="language-${lang}">${code}</code></pre></div>`;
 }
 
-// 리스트 블록 연속인 것을 <ul>/<ol>로 묶기
 function groupBlocks(blocks: Block[]): string[] {
 	const result: string[] = [];
 	let ulBuffer: string[] = [];
@@ -168,6 +217,7 @@ function groupBlocks(blocks: Block[]): string[] {
 			ulBuffer = [];
 		}
 	}
+
 	function flushOl() {
 		if (olBuffer.length) {
 			result.push(`<ol>${olBuffer.join('')}</ol>`);
@@ -183,6 +233,13 @@ function groupBlocks(blocks: Block[]): string[] {
 			continue;
 		}
 
+		if (block._type === 'imageRow') {
+			flushUl();
+			flushOl();
+			result.push(renderImageRowBlock(block as ImageRowBlock));
+			continue;
+		}
+
 		if (block._type === 'code') {
 			flushUl();
 			flushOl();
@@ -191,20 +248,20 @@ function groupBlocks(blocks: Block[]): string[] {
 		}
 
 		if (block._type === 'block') {
-			const b = block as TextBlock;
-			if (b.listItem === 'bullet') {
+			const textBlock = block as TextBlock;
+			if (textBlock.listItem === 'bullet') {
 				flushOl();
-				ulBuffer.push(renderTextBlock(b));
+				ulBuffer.push(renderTextBlock(textBlock));
 				continue;
 			}
-			if (b.listItem === 'number') {
+			if (textBlock.listItem === 'number') {
 				flushUl();
-				olBuffer.push(renderTextBlock(b));
+				olBuffer.push(renderTextBlock(textBlock));
 				continue;
 			}
 			flushUl();
 			flushOl();
-			result.push(renderTextBlock(b));
+			result.push(renderTextBlock(textBlock));
 			continue;
 		}
 
@@ -228,36 +285,88 @@ const html = value ? groupBlocks(value).join('\n') : '';
 		margin: 1.5rem 0;
 		display: block;
 	}
+
 	:global(.prose) figure img {
 		display: block;
 		height: auto;
 		border-radius: 8px;
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 	}
-	/* 이미지 크기 */
-	:global(.prose) figure.img-size-sm { max-width: 400px; }
-	:global(.prose) figure.img-size-sm img { max-width: 400px; }
-	:global(.prose) figure.img-size-md { max-width: 600px; }
-	:global(.prose) figure.img-size-md img { max-width: 600px; }
-	:global(.prose) figure.img-size-lg { max-width: 800px; }
-	:global(.prose) figure.img-size-lg img { max-width: 800px; }
-	:global(.prose) figure.img-size-full { max-width: 100%; }
-	:global(.prose) figure.img-size-full img { width: 100%; }
-	/* 이미지 정렬 */
-	:global(.prose) figure.img-align-center { margin-left: auto; margin-right: auto; text-align: center; }
-	:global(.prose) figure.img-align-left { margin-right: auto; }
-	:global(.prose) figure.img-align-right { margin-left: auto; }
+
+	:global(.prose) figure.custom-image {
+		max-width: 100%;
+	}
+
+	:global(.prose) figure.custom-image img {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	:global(.prose) figure.img-align-center {
+		margin-left: auto;
+		margin-right: auto;
+		text-align: center;
+	}
+
+	:global(.prose) figure.img-align-left {
+		margin-left: 0 !important;
+		margin-right: auto;
+	}
+
+	:global(.prose) figure.img-align-right {
+		margin-left: auto;
+		margin-right: 0 !important;
+	}
+
+	:global(.prose) .img-row {
+		display: grid;
+		margin: 1.5rem 0;
+		align-items: start;
+	}
+
+	:global(.prose) .img-row.cols-2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	:global(.prose) .img-row.cols-3 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	:global(.prose) .img-row.gap-sm {
+		gap: 0.75rem;
+	}
+
+	:global(.prose) .img-row.gap-md {
+		gap: 1rem;
+	}
+
+	:global(.prose) .img-row.gap-lg {
+		gap: 1.5rem;
+	}
+
+	:global(.prose) .img-row-item {
+		margin: 0;
+		max-width: 100%;
+	}
+
+	:global(.prose) .img-row-item img {
+		width: 100%;
+		max-width: 100%;
+	}
+
 	:global(.prose) figcaption {
 		margin-top: 0.5rem;
 		font-size: 0.875rem;
 		color: rgb(var(--gray));
 	}
+
 	:global(.prose) .code-block {
 		margin: 1.5rem 0;
 		border-radius: 8px;
 		overflow: hidden;
 		background: #1e1e2e;
 	}
+
 	:global(.prose) .code-filename {
 		padding: 0.4rem 1rem;
 		font-size: 0.8rem;
@@ -266,16 +375,24 @@ const html = value ? groupBlocks(value).join('\n') : '';
 		background: #181825;
 		border-bottom: 1px solid #313244;
 	}
+
 	:global(.prose) .code-block pre {
 		margin: 0;
 		padding: 1.25rem 1.5rem;
 		overflow-x: auto;
 	}
+
 	:global(.prose) .code-block code {
 		font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
 		font-size: 0.9rem;
 		line-height: 1.6;
 		color: #cdd6f4;
 		background: none;
+	}
+
+	@media (max-width: 720px) {
+		:global(.prose) .img-row {
+			grid-template-columns: 1fr !important;
+		}
 	}
 </style>

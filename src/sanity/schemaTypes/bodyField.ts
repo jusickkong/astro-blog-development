@@ -1,12 +1,5 @@
-/**
- * 공통 본문 필드 - projectPost와 thought에서 공유
- * 공식 확장 포함:
- * - 코드 블록 (@sanity/code-input)
- * - 텍스트 정렬 (커스텀 블록 데코레이터)
- * - 텍스트 색상 (커스텀 어노테이션)
- * - 하이라이트 (커스텀 어노테이션)
- * - 이미지 (캡션, alt 포함)
- */
+import { ImageBlockInput } from '../components/ImageBlockInput';
+import { ImageBlockPreview } from '../components/ImageBlockPreview';
 
 export const bodyField = {
 	name: 'body',
@@ -37,7 +30,6 @@ export const bodyField = {
 					{ title: '취소선', value: 'strike-through' },
 				],
 				annotations: [
-					// 링크
 					{
 						name: 'link',
 						type: 'object',
@@ -58,7 +50,6 @@ export const bodyField = {
 							},
 						],
 					},
-					// 텍스트 색상
 					{
 						name: 'textColor',
 						type: 'object',
@@ -81,7 +72,6 @@ export const bodyField = {
 							},
 						],
 					},
-					// 하이라이트
 					{
 						name: 'highlight',
 						type: 'object',
@@ -105,10 +95,13 @@ export const bodyField = {
 				],
 			},
 		},
-		// 이미지 블록
 		{
 			type: 'image',
 			options: { hotspot: true },
+			components: {
+				input: ImageBlockInput,
+				preview: ImageBlockPreview,
+			},
 			fields: [
 				{
 					name: 'alt',
@@ -137,7 +130,8 @@ export const bodyField = {
 				{
 					name: 'width',
 					type: 'string',
-					title: '이미지 크기',
+					title: '빠른 프리셋',
+					description: '기존 방식. 필요하면 아래 커스텀 폭(px)으로 더 세밀하게 조절하세요.',
 					options: {
 						list: [
 							{ title: '소 (400px)', value: 'sm' },
@@ -149,9 +143,66 @@ export const bodyField = {
 					},
 					initialValue: 'lg',
 				},
+				{
+					name: 'widthPx',
+					type: 'number',
+					title: '커스텀 폭 (px)',
+					description: '예: 320, 480, 560, 720. 비워두면 위 프리셋 값을 사용합니다.',
+					validation: (Rule: any) => Rule.min(120).max(1400).integer(),
+				},
 			],
 		},
-		// 코드 블록
+		{
+			name: 'imageRow',
+			type: 'object',
+			title: '이미지 행',
+			fields: [
+				{
+					name: 'images',
+					type: 'array',
+					title: '이미지들',
+					validation: (Rule: any) => Rule.required().min(2).max(3),
+					of: [
+						{
+							type: 'image',
+							options: { hotspot: true },
+							fields: [
+								{ name: 'alt', type: 'string', title: 'Alt 텍스트' },
+								{ name: 'caption', type: 'string', title: '캡션' },
+							],
+						},
+					],
+				},
+				{
+					name: 'gap',
+					type: 'string',
+					title: '간격',
+					options: {
+						list: [
+							{ title: '좁게', value: 'sm' },
+							{ title: '보통', value: 'md' },
+							{ title: '넓게', value: 'lg' },
+						],
+						layout: 'radio',
+					},
+					initialValue: 'md',
+				},
+			],
+			preview: {
+				select: {
+					images: 'images',
+					gap: 'gap',
+				},
+				prepare({ images, gap }: { images?: unknown[]; gap?: string }) {
+					const count = images?.length ?? 0;
+					return {
+						title: `이미지 행 (${count})`,
+						subtitle: `간격: ${gap ?? 'md'}`,
+						media: images?.[0],
+					};
+				},
+			},
+		},
 		{
 			type: 'code',
 			options: {

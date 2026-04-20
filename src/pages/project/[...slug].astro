@@ -88,6 +88,11 @@ if (isProjectPage) {
 					title={`${projectSlug} | Project`}
 					description={summaryPost?.description || `${projectSlug} project posts`}
 					metaDescription={summaryPost?.metaDescription}
+					image={
+						heroPost?.heroImage
+							? urlFor(heroPost.heroImage).width(1200).height(630).fit('crop').url()
+							: undefined
+					}
 				/>
 				<style>
 					main {
