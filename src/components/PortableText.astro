@@ -146,9 +146,7 @@ function renderImageBlock(block: ImageBlock): string {
 	const alt = escapeHtml(block.alt ?? '');
 	const caption = block.caption ? `<figcaption>${escapeHtml(block.caption)}</figcaption>` : '';
 	const align = block.align ?? 'center';
-	const alignStyle = align === 'left' ? 'margin-right:auto' : align === 'right' ? 'margin-left:auto' : 'margin-left:auto;margin-right:auto';
-	const maxWidth = block.width === 'full' ? '100%' : `${w}px`;
-	return `<figure style="text-align:${align};max-width:${maxWidth};${alignStyle}"><img src="${src}" alt="${alt}" loading="lazy" style="max-width:100%" />${caption}</figure>`;
+	return `<figure class="img-size-${block.width ?? 'lg'} img-align-${align}"><img src="${src}" alt="${alt}" loading="lazy" />${caption}</figure>`;
 }
 
 function renderCodeBlock(block: CodeBlock): string {
@@ -228,13 +226,27 @@ const html = value ? groupBlocks(value).join('\n') : '';
 <style>
 	:global(.prose) figure {
 		margin: 1.5rem 0;
-		text-align: center;
+		display: block;
 	}
 	:global(.prose) figure img {
-		max-width: 100%;
+		display: block;
+		height: auto;
 		border-radius: 8px;
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 	}
+	/* 이미지 크기 */
+	:global(.prose) figure.img-size-sm { max-width: 400px; }
+	:global(.prose) figure.img-size-sm img { max-width: 400px; }
+	:global(.prose) figure.img-size-md { max-width: 600px; }
+	:global(.prose) figure.img-size-md img { max-width: 600px; }
+	:global(.prose) figure.img-size-lg { max-width: 800px; }
+	:global(.prose) figure.img-size-lg img { max-width: 800px; }
+	:global(.prose) figure.img-size-full { max-width: 100%; }
+	:global(.prose) figure.img-size-full img { width: 100%; }
+	/* 이미지 정렬 */
+	:global(.prose) figure.img-align-center { margin-left: auto; margin-right: auto; text-align: center; }
+	:global(.prose) figure.img-align-left { margin-right: auto; }
+	:global(.prose) figure.img-align-right { margin-left: auto; }
 	:global(.prose) figcaption {
 		margin-top: 0.5rem;
 		font-size: 0.875rem;
