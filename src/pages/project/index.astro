@@ -273,7 +273,12 @@ const recentUpdates = posts.slice(0, 8);
 										<div class="project-image">
 											{project.coverImage ? (
 												<img
-													src={urlFor(project.coverImage).width(320).height(200).fit('crop').url()}
+													src={urlFor(project.coverImage)
+														.ignoreImageParams()
+														.width(320)
+														.height(200)
+														.fit('max')
+														.url()}
 													width="320"
 													alt=""
 												/>
