@@ -6,6 +6,7 @@
     { "src": "/parents-button-privacy-policy.html", "dest": "/parents-button-privacy-policy.html" },
     { "src": "/cashback-tracker-privacy-policy.html", "dest": "/cashback-tracker-privacy-policy.html" },
     { "src": "/space-out-privacy-policy.html", "dest": "/space-out-privacy-policy.html" },
+    { "src": "/somethingout-privacy-policy.html", "dest": "/somethingout-privacy-policy.html" },
     { "src": "/app-ads.txt", "dest": "/app-ads.txt" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
