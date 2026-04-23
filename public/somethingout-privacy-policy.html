@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SomethingOut - 개인정보처리방침</title>
+    <style>
+        body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 40px auto; padding: 0 20px; background-color: #f5f8ff; }
+        h1 { color: #1565C0; border-bottom: 2px solid #1565C0; padding-bottom: 10px; }
+        h2 { color: #1976D2; margin-top: 30px; }
+        p { margin-bottom: 15px; }
+        ul { margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+        .highlight { background-color: #E3F2FD; padding: 2px 6px; font-weight: bold; border-radius: 4px; }
+        .box { background-color: #E8F5E9; border-left: 4px solid #43A047; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; }
+        .footer { margin-top: 50px; font-size: 0.9em; color: #666; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>개인정보처리방침</h1>
+    <p><strong>SomethingOut</strong>(이하 "앱")은 사용자의 개인정보를 소중히 여기며, 관련 법령을 준수합니다. 본 방침은 앱이 사용자 정보를 어떻게 처리하는지 설명합니다.</p>
+
+    <div class="box">
+        <strong>핵심 원칙:</strong> 본 앱은 외부 서버나 클라우드를 사용하지 않습니다. 모든 데이터는 사용자 기기 안에서만 처리되며, 같은 공유기에 연결된 PC와의 로컬 통신에만 사용됩니다.
+    </div>
+
+    <h2>1. 수집하는 정보와 이용 목적</h2>
+    <p>본 앱은 폰과 PC 사이에서 데이터를 전송하기 위해 아래 정보에 접근합니다.</p>
+    <ul>
+        <li>
+            <span class="highlight">클립보드 내용</span><br>
+            사용자가 플로팅 버튼을 탭할 때 현재 클립보드의 텍스트 또는 URL을 읽습니다. 읽은 내용은 같은 공유기 내의 PC로 전송되거나 기기 내 SQLite DB에 이력으로 저장됩니다. 외부 서버로는 전송되지 않습니다.
+        </li>
+        <li>
+            <span class="highlight">이미지</span><br>
+            사용자가 다른 앱의 공유 메뉴에서 SomethingOut을 선택하면, 해당 이미지를 읽어 앱 내부 저장소(<code>files/images/</code>)에 저장하고 같은 공유기 내 PC 브라우저에서 열람할 수 있게 합니다.
+        </li>
+        <li>
+            <span class="highlight">WiFi 및 네트워크 상태</span><br>
+            로컬 HTTP 서버를 운영하고 현재 기기의 IP 주소를 표시하기 위해 사용합니다. 인터넷 연결은 사용하지 않습니다.
+        </li>
+        <li>
+            <span class="highlight">Bluetooth 장치 정보</span><br>
+            선택적 기능으로, 사용자가 직접 페어링한 PC와 데이터를 주고받기 위해 사용합니다. 블루투스를 사용하지 않으면 해당 권한은 불필요합니다.
+        </li>
+    </ul>
+
+    <h2>2. 데이터 저장 위치</h2>
+    <ul>
+        <li>송수신 이력: 기기 내부의 SQLite 데이터베이스(<code>somethingout.db</code>)에 저장됩니다.</li>
+        <li>공유 이미지: 앱 내부 저장소(<code>files/images/</code>)에 저장됩니다.</li>
+        <li>위 데이터는 앱 삭제 시 함께 삭제됩니다.</li>
+        <li><strong>외부 서버, 클라우드, 제3자에게 전송되는 데이터는 없습니다.</strong></li>
+    </ul>
+
+    <h2>3. 제3자 서비스 — 광고</h2>
+    <p>본 앱은 무료 서비스 제공을 위해 <strong>Google AdMob</strong> 배너 광고를 사용합니다. AdMob은 광고 노출 및 최적화를 위해 아래 정보를 자동으로 수집할 수 있습니다.</p>
+    <ul>
+        <li>광고 ID (Android Advertising ID)</li>
+        <li>기기 모델, OS 버전 등 기술적 기기 정보</li>
+        <li>IP 주소 (광고 요청 시)</li>
+    </ul>
+    <p>이는 Google의 개인정보 보호정책 및 광고 정책에 따라 처리됩니다.<br>
+    Google 개인정보처리방침: <a href="https://policies.google.com/privacy" target="_blank">https://policies.google.com/privacy</a></p>
+    <p>기기 설정 → Google → 광고 에서 광고 맞춤 설정을 해제하거나 광고 ID를 초기화할 수 있습니다.</p>
+
+    <h2>4. 요청하는 권한</h2>
+    <ul>
+        <li><span class="highlight">INTERNET</span>: 기기 내 로컬 HTTP 서버 운영 (포트 8080)</li>
+        <li><span class="highlight">ACCESS_WIFI_STATE / ACCESS_NETWORK_STATE</span>: 로컬 IP 주소 조회</li>
+        <li><span class="highlight">SYSTEM_ALERT_WINDOW</span>: 플로팅 버튼 화면 오버레이</li>
+        <li><span class="highlight">FOREGROUND_SERVICE</span>: 백그라운드 서비스 유지</li>
+        <li><span class="highlight">POST_NOTIFICATIONS</span>: 수신 알림 표시 (Android 13 이상)</span></li>
+        <li><span class="highlight">VIBRATE</span>: 전송 시 진동 피드백</li>
+        <li><span class="highlight">BLUETOOTH_CONNECT / BLUETOOTH_SCAN</span>: 선택적 Bluetooth 연결 (사용 시에만)</li>
+        <li><span class="highlight">AD_ID</span>: Google AdMob 광고 서비스</li>
+    </ul>
+
+    <h2>5. 개인정보의 보유 및 파기</h2>
+    <p>앱이 생성하는 모든 데이터(이력 DB, 공유 이미지)는 기기 내에만 존재합니다. 앱을 삭제하면 해당 데이터도 함께 삭제됩니다. 별도의 서버에 데이터가 저장되지 않으므로 추가적인 파기 절차는 없습니다.</p>
+
+    <h2>6. 이용자의 권리</h2>
+    <ul>
+        <li>앱 내 이력은 웹 UI 또는 앱에서 언제든 삭제할 수 있습니다.</li>
+        <li>기기 설정에서 각 권한을 개별적으로 철회할 수 있습니다.</li>
+        <li>앱 삭제 시 모든 로컬 데이터가 제거됩니다.</li>
+    </ul>
+
+    <h2>7. 아동 개인정보</h2>
+    <p>본 앱은 만 14세 미만 아동을 대상으로 하지 않으며, 아동의 개인정보를 의도적으로 수집하지 않습니다.</p>
+
+    <h2>8. 개인정보처리방침 변경</h2>
+    <p>본 방침이 변경되는 경우 앱 스토어 업데이트 노트 또는 본 페이지를 통해 공지합니다.</p>
+
+    <div class="footer">
+        <p><strong>공고일자:</strong> 2026년 4월 23일</p>
+        <p><strong>시행일자:</strong> 2026년 4월 23일</p>
+        <p><strong>문의:</strong> sparkkong@gmail.com</p>
+    </div>
+</body>
+</html>
