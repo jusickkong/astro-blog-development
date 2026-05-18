@@ -1,15 +1,49 @@
 {
-  "builds": [
-    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
-  ],
-  "routes": [
-    { "src": "/parents-button-privacy-policy.html", "dest": "/parents-button-privacy-policy.html" },
-    { "src": "/cashback-tracker-privacy-policy.html", "dest": "/cashback-tracker-privacy-policy.html" },
-    { "src": "/space-out-privacy-policy.html", "dest": "/space-out-privacy-policy.html" },
-    { "src": "/somethingout-privacy-policy.html", "dest": "/somethingout-privacy-policy.html" },
-    { "src": "/whats-bettert-calculator-privacy-policy.html", "dest": "/whats-bettert-calculator-privacy-policy.html" },
-    { "src": "/mart-calculator-privacy-policy.html", "dest": "/mart-calculator-privacy-policy.html" },
-    { "src": "/app-ads.txt", "dest": "/app-ads.txt" },
-    { "src": "/(.*)", "dest": "/$1" }
-  ]
+    "builds":  [
+                   {
+                       "src":  "package.json",
+                       "use":  "@vercel/static-build",
+                       "config":  {
+                                      "distDir":  "dist"
+                                  }
+                   }
+               ],
+    "routes":  [
+                   {
+                       "src":  "/parents-button-privacy-policy.html",
+                       "dest":  "/parents-button-privacy-policy.html"
+                   },
+                   {
+                       "src":  "/cashback-tracker-privacy-policy.html",
+                       "dest":  "/cashback-tracker-privacy-policy.html"
+                   },
+                   {
+                       "src":  "/space-out-privacy-policy.html",
+                       "dest":  "/space-out-privacy-policy.html"
+                   },
+                   {
+                       "src":  "/somethingout-privacy-policy.html",
+                       "dest":  "/somethingout-privacy-policy.html"
+                   },
+                   {
+                       "src":  "/whats-bettert-calculator-privacy-policy.html",
+                       "dest":  "/whats-bettert-calculator-privacy-policy.html"
+                   },
+                   {
+                       "src":  "/mart-calculator-privacy-policy.html",
+                       "dest":  "/mart-calculator-privacy-policy.html"
+                   },
+                   {
+                       "src":  "/real-price-calculator-privacy-policy.html",
+                       "dest":  "/real-price-calculator-privacy-policy.html"
+                   },
+                   {
+                       "src":  "/app-ads.txt",
+                       "dest":  "/app-ads.txt"
+                   },
+                   {
+                       "src":  "/(.*)",
+                       "dest":  "/$1"
+                   }
+               ]
 }
