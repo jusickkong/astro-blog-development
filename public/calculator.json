@@ -1,0 +1,22 @@
+{
+  "apps": [
+    {
+      "name": "뭐가이득?",
+      "desc": "g, kg, ml, L, 개 등 단위별 단가를 계산해 어떤 상품이 더 이득인지 비교해드립니다",
+      "icon_url": "https://www.dev-outpost.com/serise/images/ic_app_whatsbetter.png",
+      "store_url": "https://play.google.com/store/apps/details?id=com.spax.whatsbetter"
+    },
+    {
+      "name": "진짜얼마?",
+      "desc": "중복 할인 쿠폰 적용 시 최저가 순서를 자동으로 찾아드립니다",
+      "icon_url": "https://www.dev-outpost.com/serise/images/ic_app_realprice.png",
+      "store_url": "https://play.google.com/store/apps/details?id=com.spax.realprice"
+    },
+    {
+      "name": "마트 계산기",
+      "desc": "마트 장보기 중 할인 계산 결과를 코너별로 저장하고 합산합니다",
+      "icon_url": "https://www.dev-outpost.com/serise/images/ic_app_martcalculator.png",
+      "store_url": "https://play.google.com/store/apps/details?id=com.spax.martcalculator"
+    }
+  ]
+}

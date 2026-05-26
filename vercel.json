@@ -42,6 +42,10 @@
                        "dest":  "/app-ads.txt"
                    },
                    {
+                       "src":  "/serise/calculator.json",
+                       "dest":  "/calculator.json"
+                   },
+                   {
                        "src":  "/(.*)",
                        "dest":  "/$1"
                    }
