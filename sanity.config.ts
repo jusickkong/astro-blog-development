@@ -61,20 +61,41 @@ export default defineConfig({
 													.id(project._id)
 													.title(`${project.name}${formatDraftSuffix(project.draftCount)}`)
 													.child(
-														S.documentList()
-															.id(`posts-${project._id}`)
-															.title(
-																`${project.name}${formatDraftSuffix(project.draftCount)}`,
-															)
-															.filter(
-																'_type == "projectPost" && (project._ref == $projectId || projectSlug == $projectName)',
-															)
-															.params({
-																projectId: project._id,
-																projectName: project.name,
-															})
-															.defaultOrdering([
-																{ field: 'pubDate', direction: 'desc' },
+														S.list()
+															.id(`project-${project._id}`)
+															.title(project.name)
+															.items([
+																S.listItem()
+																	.id(`settings-${project._id}`)
+																	.title('프로젝트 설정')
+																	.child(
+																		S.document()
+																			.id(`doc-${project._id}`)
+																			.documentId(project._id)
+																			.schemaType('project'),
+																	),
+																S.listItem()
+																	.id(`posts-${project._id}`)
+																	.title(
+																		`Posts${formatDraftSuffix(project.draftCount)}`,
+																	)
+																	.child(
+																		S.documentList()
+																			.id(`postlist-${project._id}`)
+																			.title(
+																				`${project.name}${formatDraftSuffix(project.draftCount)}`,
+																			)
+																			.filter(
+																				'_type == "projectPost" && (project._ref == $projectId || projectSlug == $projectName)',
+																			)
+																			.params({
+																				projectId: project._id,
+																				projectName: project.name,
+																			})
+																			.defaultOrdering([
+																				{ field: 'pubDate', direction: 'desc' },
+																			]),
+																	),
 															]),
 													),
 										),

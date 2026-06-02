@@ -9,7 +9,9 @@
     "astro": "astro",
     "sanity": "sanity",
     "migrate": "node --env-file=.env scripts/migrate-to-sanity.mjs",
-    "link-projects": "node --env-file=.env scripts/link-projects.mjs"
+    "link-projects": "node --env-file=.env scripts/link-projects.mjs",
+    "migrate-project-slugs": "node --env-file=.env scripts/migrate-project-slugs.mjs",
+    "autopost": "node --env-file=.env scripts/autopost.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.15",

@@ -27,6 +27,7 @@ export type PortableTextBlock = {
 export type ProjectPost = {
 	_id: string;
 	projectSlug: string;
+	projectName: string;
 	postSlug: { current: string };
 	title: string;
 	description?: string;
@@ -48,32 +49,54 @@ export type Thought = {
 	body?: PortableTextBlock[];
 };
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+// Mirrors the slugify in project schema — strips characters invalid in URL paths
+function sanitizeSlug(slug: string): string {
+	return slug
+		.toLowerCase()
+		.trim()
+		.replace(/[?]+/g, '')
+		.replace(/\s+/g, '-')
+		.replace(/[^a-z0-9\-가-힣]/g, '')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+}
+
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
 export async function getAllProjectPosts(): Promise<ProjectPost[]> {
-	return client.fetch(
+	const posts: ProjectPost[] = await client.fetch(
 		`*[_type == "projectPost"] | order(pubDate desc) {
       _id,
-      "projectSlug": coalesce(project->name, projectSlug),
+      "projectSlug": coalesce(project->slug.current, project->name, projectSlug),
+      "projectName": coalesce(project->name, project->slug.current, projectSlug),
       postSlug, title, description, metaDescription,
       pubDate, updatedDate, heroImage
     }`,
 	);
+	return posts.map((p) => ({ ...p, projectSlug: sanitizeSlug(p.projectSlug) }));
 }
 
 export async function getProjectPost(
 	projectSlug: string,
 	postSlug: string,
 ): Promise<ProjectPost | null> {
-	return client.fetch(
-		`*[_type == "projectPost" && coalesce(project->name, projectSlug) == $projectSlug && postSlug.current == $postSlug][0] {
+	// Fetch by postSlug and filter client-side using sanitized comparison,
+	// since the raw Sanity slug may contain URL-invalid characters (e.g. "?").
+	const posts: ProjectPost[] = await client.fetch(
+		`*[_type == "projectPost" && postSlug.current == $postSlug] {
       _id,
-      "projectSlug": coalesce(project->name, projectSlug),
+      "projectSlug": coalesce(project->slug.current, project->name, projectSlug),
+      "projectName": coalesce(project->name, project->slug.current, projectSlug),
       postSlug, title, description, metaDescription,
       pubDate, updatedDate, heroImage, body
     }`,
-		{ projectSlug, postSlug },
+		{ postSlug },
 	);
+	const match = posts.find((p) => sanitizeSlug(p.projectSlug) === projectSlug);
+	if (!match) return null;
+	return { ...match, projectSlug: sanitizeSlug(match.projectSlug) };
 }
 
 export async function getAllThoughts(): Promise<Thought[]> {

@@ -49,6 +49,7 @@ const allPosts = await getAllProjectPosts();
 
 let post = null;
 let projectSlug = '';
+let projectName = '';
 let projectPosts: typeof allPosts = [];
 let latestPost: (typeof allPosts)[0] | null = null;
 let heroPost: (typeof allPosts)[0] | null = null;
@@ -61,11 +62,13 @@ if (isProjectPage) {
 		.sort((a, b) => new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf());
 
 	latestPost = projectPosts[0] ?? null;
+	projectName = latestPost?.projectName ?? projectSlug;
 	heroPost = projectPosts.find((p) => p.heroImage) ?? latestPost;
 	summaryPost =
 		projectPosts.find((p) => p.description && p.description.trim().length > 0) ?? latestPost;
 } else {
 	post = await getProjectPost(props.projectSlug, props.postSlug);
+	projectName = post?.projectName ?? props.projectSlug;
 }
 ---
 
@@ -85,8 +88,8 @@ if (isProjectPage) {
 		<html lang="en">
 			<head>
 				<BaseHead
-					title={`${projectSlug} | Project`}
-					description={summaryPost?.description || `${projectSlug} project posts`}
+					title={`${projectName} | Project`}
+					description={summaryPost?.description || `${projectName} project posts`}
 					metaDescription={summaryPost?.metaDescription}
 					image={
 						heroPost?.heroImage
@@ -281,7 +284,7 @@ if (isProjectPage) {
 									</span>
 								)}
 							</div>
-							<h1>{projectSlug}</h1>
+							<h1>{projectName}</h1>
 							<p class="hero-desc">
 								{summaryPost?.description || 'This project does not have a summary yet.'}
 							</p>

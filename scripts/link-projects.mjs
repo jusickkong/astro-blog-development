@@ -12,6 +12,17 @@
 
 import { createClient } from '@sanity/client';
 
+function toProjectSlug(value) {
+	return value
+		.toLowerCase()
+		.trim()
+		.replace(/[?]+/g, '')
+		.replace(/\s+/g, '-')
+		.replace(/[^a-z0-9\-가-힣]/g, '')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+}
+
 const client = createClient({
 	projectId: process.env.PUBLIC_SANITY_PROJECT_ID,
 	dataset: process.env.PUBLIC_SANITY_DATASET || 'production',
@@ -58,6 +69,10 @@ async function main() {
 			const created = await client.create({
 				_type: 'project',
 				name: slug,
+				slug: {
+					_type: 'slug',
+					current: toProjectSlug(slug),
+				},
 			});
 			projectIdMap[slug] = created._id;
 			console.log(`  ✅ 생성: project "${slug}" (${created._id})`);

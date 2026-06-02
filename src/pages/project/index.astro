@@ -33,7 +33,7 @@ const projects = Object.entries(grouped)
 
 		return {
 			slug,
-			name: slug,
+			name: sortedPosts[0]?.projectName ?? slug,
 			posts: sortedPosts,
 			postCount: sortedPosts.length,
 			coverImage: coverPost?.heroImage,
@@ -323,7 +323,7 @@ const recentUpdates = posts.slice(0, 8);
 										<div class="recent-main">
 											<h3>{post.title}</h3>
 											<div class="recent-sub">
-												<span class="recent-project">{post.projectSlug}</span>
+												<span class="recent-project">{post.projectName}</span>
 												{post.description && <span>{post.description}</span>}
 											</div>
 										</div>
