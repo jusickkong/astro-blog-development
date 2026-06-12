@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>색깔금지 - 개인정보처리방침</title>
+    <style>
+        :root {
+            --bg-top: #171430;
+            --bg-bottom: #0A0918;
+            --panel: #1E1B3A;
+            --panel-strong: #262147;
+            --line: #37325E;
+            --text: #F7F5FF;
+            --muted: #C9C5E3;
+            --accent: #FFD740;
+            --danger: #FF5277;
+            --blue: #448AFF;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 40px 20px 64px;
+            font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+            line-height: 1.72;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 16% 10%, rgba(255, 82, 119, 0.18), transparent 26%),
+                radial-gradient(circle at 86% 8%, rgba(68, 138, 255, 0.16), transparent 28%),
+                linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            min-height: 100vh;
+        }
+
+        main {
+            width: min(860px, 100%);
+            margin: 0 auto;
+            background: rgba(30, 27, 58, 0.94);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 32px 28px;
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            color: var(--accent);
+            font-size: 34px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            margin: 32px 0 10px;
+            color: #FFFFFF;
+            font-size: 22px;
+        }
+
+        p, li { font-size: 16px; }
+        p { margin: 0 0 14px; }
+        ul { margin: 0 0 14px 20px; padding: 0; }
+        li { margin-bottom: 8px; }
+
+        .lead { color: var(--muted); }
+
+        .highlight {
+            display: inline-block;
+            background: var(--panel-strong);
+            color: var(--accent);
+            padding: 2px 8px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .notice {
+            margin: 24px 0;
+            padding: 16px 18px;
+            background: rgba(255, 215, 64, 0.1);
+            border: 1px solid rgba(255, 215, 64, 0.38);
+            border-radius: 10px;
+        }
+
+        .footer {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        a { color: var(--accent); }
+    </style>
+</head>
+<body>
+<main>
+    <h1>개인정보처리방침</h1>
+    <p class="lead">
+        <strong>색깔금지</strong>는 이용자의 개인정보를 중요하게 생각하며, 관련 법령을 준수합니다.
+        본 방침은 앱 이용 과정에서 개인정보가 어떻게 처리되는지 설명합니다.
+    </p>
+
+    <div class="notice">
+        색깔금지는 회원가입, 로그인, 서버 저장, 외부 공유 기능을 제공하지 않으며 이용자를 식별할 수 있는 개인정보를 수집, 저장, 전송 또는 공유하지 않습니다.
+    </div>
+
+    <h2>1. 개인정보 수집 및 이용</h2>
+    <p>
+        색깔금지는 이름, 이메일 주소, 전화번호, 위치정보, 연락처, 사진, 기기 광고 ID 등 이용자를 식별할 수 있는 개인정보를 수집하지 않습니다.
+        앱은 게임 플레이 기능 제공을 위해 별도의 계정 생성이나 개인정보 입력을 요구하지 않습니다.
+    </p>
+
+    <h2>2. 기기에 저장되는 정보</h2>
+    <p>
+        앱은 원활한 게임 이용을 위해 다음과 같은 비개인정보성 설정값을 이용자 기기 내부에만 저장할 수 있습니다.
+    </p>
+    <ul>
+        <li><span class="highlight">최고 점수</span>: 난이도별 게임 기록</li>
+        <li><span class="highlight">게임 설정</span>: 선택한 난이도, 사운드 켜기/끄기 상태</li>
+        <li><span class="highlight">이용 상태</span>: 튜토리얼 확인 여부</li>
+    </ul>
+    <p>
+        위 정보는 앱 내부 저장소에만 보관되며 개발자 서버나 제3자 서버로 전송되지 않습니다.
+        또한 이용자를 직접 식별하기 위한 목적으로 사용되지 않습니다.
+    </p>
+
+    <h2>3. 개인정보의 제3자 제공 및 위탁</h2>
+    <p>
+        색깔금지는 수집하는 개인정보가 없으므로 개인정보를 제3자에게 제공하거나 처리 업무를 위탁하지 않습니다.
+    </p>
+
+    <h2>4. 광고 및 분석 도구</h2>
+    <p>
+        현재 색깔금지는 광고 SDK, 방문 분석 SDK, 이용자 추적 도구를 사용하지 않습니다.
+        따라서 광고 식별자나 분석 목적의 기기 정보도 수집하지 않습니다.
+    </p>
+
+    <h2>5. 앱 권한</h2>
+    <p>
+        색깔금지는 위치, 연락처, 카메라, 마이크, 저장공간 등 민감한 권한을 요청하지 않습니다.
+        앱이 동작하기 위해 이용자의 개인정보 접근 권한은 필요하지 않습니다.
+    </p>
+
+    <h2>6. 보유 기간 및 삭제</h2>
+    <p>
+        기기 내부에 저장된 게임 기록과 설정값은 이용자가 앱 데이터를 삭제하거나 앱을 제거하면 함께 삭제됩니다.
+        개발자는 해당 정보를 별도로 보유하지 않습니다.
+    </p>
+
+    <h2>7. 아동의 개인정보</h2>
+    <p>
+        색깔금지는 아동을 포함한 모든 이용자의 개인정보를 별도로 수집하지 않습니다.
+        개인정보 수집이 확인되는 경우가 발생하면 지체 없이 필요한 조치를 취하겠습니다.
+    </p>
+
+    <h2>8. 문의처</h2>
+    <p>개인정보처리방침에 관한 문의는 아래 이메일로 연락해 주세요.</p>
+    <p><strong>이메일:</strong> <a href="mailto:sparkkong@gmail.com">sparkkong@gmail.com</a></p>
+
+    <div class="footer">
+        <p><strong>공고일자:</strong> 2026년 6월 12일</p>
+        <p><strong>시행일자:</strong> 2026년 6월 12일</p>
+    </div>
+</main>
+</body>
+</html>
