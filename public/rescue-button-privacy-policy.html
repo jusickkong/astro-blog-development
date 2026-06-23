@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구조버튼 - 개인정보처리방침</title>
+    <style>
+        :root {
+            --primary: #D94032;
+            --primary-dark: #A82C20;
+            --soft: #FFE7E2;
+            --bg: #FBF8F6;
+            --line: #E7DAD6;
+            --text: #173142;
+            --muted: #36566C;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 40px 20px 60px;
+            font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+            line-height: 1.72;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top right, rgba(217, 64, 50, 0.08), transparent 28%),
+                linear-gradient(180deg, #fffdfc 0%, var(--bg) 100%);
+        }
+
+        main {
+            max-width: 860px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            padding: 32px 28px;
+            box-shadow: 0 18px 48px rgba(168, 44, 32, 0.06);
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            color: var(--primary);
+            font-size: 34px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            margin: 32px 0 10px;
+            color: var(--primary-dark);
+            font-size: 22px;
+        }
+
+        p, li { font-size: 16px; }
+        p { margin: 0 0 14px; }
+        ul { margin: 0 0 14px 20px; padding: 0; }
+        li { margin-bottom: 8px; }
+
+        .lead {
+            color: var(--muted);
+        }
+
+        .highlight {
+            display: inline-block;
+            background: var(--soft);
+            color: var(--primary-dark);
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .footer {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        a {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>개인정보처리방침</h1>
+    <p class="lead">
+        <strong>구조버튼</strong>은 이용자의 개인정보를 중요하게 생각하며, 관련 법령을 준수합니다.
+        본 방침은 앱 사용 과정에서 어떤 정보가 처리되는지 설명합니다.
+    </p>
+
+    <h2>1. 개인정보 수집 및 이용 목적</h2>
+    <p>
+        구조버튼은 긴급 상황에서 빠른 신고 전화 연결, 보호자 연락, 긴급 의료정보 표시 기능을 제공하기 위한 범위에서만 데이터를 처리합니다.
+        앱 자체는 회원가입 기능을 제공하지 않으며, 이용자의 정보를 서버로 전송하거나 외부에 수집하지 않습니다.
+    </p>
+
+    <h2>2. 처리되는 정보 항목</h2>
+    <p>앱 사용 과정에서 다음 정보가 기기 내부에 저장될 수 있습니다.</p>
+    <ul>
+        <li><span class="highlight">긴급 의료정보</span>: 이름, 혈액형, 복용약, 지병, 알레르기 등 사용자가 직접 입력한 의료 관련 정보</li>
+        <li><span class="highlight">보호자 연락처</span>: 보호자 전화 기능을 위해 사용자가 직접 선택한 이름과 전화번호</li>
+    </ul>
+    <p>
+        위 정보는 모두 사용자가 직접 입력하거나 선택한 경우에만 저장되며, 입력하지 않으면 저장되지 않습니다.
+    </p>
+
+    <h2>3. 정보 처리 방식</h2>
+    <p>
+        입력한 긴급 의료정보와 보호자 연락처는 기기 내부 저장소(SharedPreferences)에만 저장됩니다.
+        개발자는 이 데이터를 별도 서버로 전송하거나 외부 데이터베이스에 저장하지 않으며, 제3자에게 제공하지 않습니다.
+    </p>
+
+    <h2>4. 연락처 접근</h2>
+    <p>
+        보호자 전화 기능에서 '연락처 선택'을 누르면 기기의 연락처 선택 화면이 열립니다.
+        사용자가 직접 선택한 한 명의 이름과 전화번호만 앱에 저장되며, 전체 연락처 목록을 읽거나 수집하지 않습니다.
+    </p>
+
+    <h2>5. 전화 연결</h2>
+    <p>
+        112, 119, 110, 129, 보호자 등 전화 버튼을 누르면 기기의 전화 앱에 번호가 입력됩니다.
+        실제 통화 연결은 사용자가 직접 통화 버튼을 눌러야 이루어지며, 앱이 자동으로 전화를 걸지 않습니다.
+    </p>
+
+    <h2>6. 앱 권한 사용</h2>
+    <p>구조버튼은 다음 권한을 사용할 수 있습니다.</p>
+    <ul>
+        <li><span class="highlight">진동(VIBRATE)</span>: 사이렌 화면 및 버튼 동작 시 진동 알림을 위해 사용</li>
+        <li><span class="highlight">오디오 설정 변경(MODIFY_AUDIO_SETTINGS)</span>: 사이렌 화면에서 경고음을 충분한 크기로 재생하기 위해 사용</li>
+    </ul>
+    <p>
+        위치, 카메라, 마이크, 백그라운드 위치 추적 등 민감한 권한은 요청하지 않으며,
+        '위치 설정' 버튼은 기기의 위치 설정 화면으로 이동만 할 뿐 위치 정보를 수집하지 않습니다.
+    </p>
+
+    <h2>7. 보유 기간 및 삭제</h2>
+    <p>
+        저장된 긴급 의료정보와 보호자 연락처는 사용자가 직접 삭제하거나 앱을 제거할 때까지 기기 내부에 남아 있습니다.
+        앱 내에서 각 항목을 삭제할 수 있으며, 앱을 삭제하면 저장된 모든 로컬 데이터가 함께 제거됩니다.
+    </p>
+
+    <h2>8. 이용자의 권리</h2>
+    <p>
+        이용자는 앱 내 기능을 통해 저장된 의료정보와 보호자 연락처를 언제든지 직접 수정·삭제할 수 있으며,
+        앱 삭제를 통해 로컬 저장 데이터를 제거할 수 있습니다.
+    </p>
+
+    <h2>9. 아동의 개인정보</h2>
+    <p>
+        본 앱은 아동을 대상으로 특별히 설계된 서비스가 아니며, 개발자가 아동의 개인정보를 별도로 수집하지 않습니다.
+    </p>
+
+    <h2>10. 문의처</h2>
+    <p>개인정보처리방침 관련 문의는 아래 이메일로 연락해 주세요.</p>
+    <p><strong>이메일:</strong> sparkkong@gmail.com</p>
+
+    <div class="footer">
+        <p><strong>공고일자:</strong> 2026년 6월 23일</p>
+        <p><strong>시행일자:</strong> 2026년 6월 23일</p>
+    </div>
+</main>
+</body>
+</html>
