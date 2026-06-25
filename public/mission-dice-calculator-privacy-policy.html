@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미션다이스 - 개인정보처리방침</title>
+    <style>
+        :root {
+            --primary: #E64A19;
+            --primary-dark: #BF360C;
+            --soft: #FFE8DD;
+            --bg: #FFF8F5;
+            --line: #F0DDD1;
+            --text: #2A1A12;
+            --muted: #6B5247;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 40px 20px 60px;
+            font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+            line-height: 1.72;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top right, rgba(230, 74, 25, 0.08), transparent 28%),
+                linear-gradient(180deg, #fffdfb 0%, var(--bg) 100%);
+        }
+
+        main {
+            max-width: 860px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            padding: 32px 28px;
+            box-shadow: 0 18px 48px rgba(191, 54, 12, 0.06);
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            color: var(--primary);
+            font-size: 34px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            margin: 32px 0 10px;
+            color: var(--primary-dark);
+            font-size: 22px;
+        }
+
+        p, li { font-size: 16px; }
+        p { margin: 0 0 14px; }
+        ul { margin: 0 0 14px 20px; padding: 0; }
+        li { margin-bottom: 8px; }
+
+        .lead {
+            color: var(--muted);
+        }
+
+        .highlight {
+            display: inline-block;
+            background: var(--soft);
+            color: var(--primary-dark);
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .footer {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        a {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>개인정보처리방침</h1>
+    <p class="lead">
+        <strong>미션다이스</strong>는 이용자의 개인정보를 중요하게 생각하며, 관련 법령을 준수합니다.
+        본 방침은 앱 사용 과정에서 어떤 정보가 처리되는지 설명합니다.
+    </p>
+
+    <h2>1. 개인정보 수집 및 이용 목적</h2>
+    <p>
+        미션다이스는 이용자가 직접 등록한 미션을 매일 랜덤으로 제시하고, 완료 기록과 스트릭(연속 달성)을 관리하며,
+        설정한 시간에 알림을 보내기 위한 범위에서만 데이터를 처리합니다.
+        앱 자체는 회원가입 기능을 제공하지 않으며, 이용자의 이름, 이메일, 연락처 같은 식별 정보를 직접 수집하지 않습니다.
+    </p>
+
+    <h2>2. 처리되는 정보 항목</h2>
+    <p>앱 사용 과정에서 다음 정보가 처리될 수 있습니다.</p>
+    <ul>
+        <li><span class="highlight">미션 데이터</span>: 이용자가 직접 입력한 미션 내용과 카테고리</li>
+        <li><span class="highlight">수행 기록</span>: 날짜별 미션 완료 여부 및 스트릭(연속 달성) 정보</li>
+        <li><span class="highlight">알림 설정</span>: 알림 사용 여부, 알림 시간 등 사용자가 지정한 설정 값</li>
+    </ul>
+
+    <h2>3. 정보 처리 방식</h2>
+    <p>
+        사용자가 등록한 미션과 수행 기록은 기기 내부 데이터베이스(Room)에, 알림 설정은 기기 내부 저장소(DataStore)에만 저장됩니다.
+        개발자는 이 데이터를 별도 서버로 전송하거나 외부 데이터베이스에 저장하지 않습니다.
+    </p>
+
+    <h2>4. 제3자 서비스 및 광고</h2>
+    <p>
+        미션다이스는 광고를 포함하지 않으며, 외부 광고 SDK나 분석 도구를 통해 개인정보를 수집·전송하지 않습니다.
+        앱은 네트워크 통신 없이 기기 내부에서 동작합니다.
+    </p>
+
+    <h2>5. 앱 권한 사용</h2>
+    <p>앱은 알림 기능 제공을 위해 다음 권한을 사용할 수 있습니다.</p>
+    <ul>
+        <li><span class="highlight">알림 표시</span>: 오늘의 미션 알림을 보내기 위한 알림 권한</li>
+        <li><span class="highlight">정확한 알림 예약</span>: 지정한 시간에 정확히 알림을 전달하기 위한 권한</li>
+        <li><span class="highlight">부팅 완료 수신</span>: 기기 재시작 후에도 알림이 유지되도록 다시 예약하기 위한 권한</li>
+    </ul>
+    <p>위치, 연락처, 카메라, 마이크 등 민감한 권한은 요청하지 않습니다.</p>
+
+    <h2>6. 보유 기간 및 삭제</h2>
+    <p>
+        미션과 수행 기록 데이터는 사용자가 직접 삭제하거나 앱을 제거할 때까지 기기 내부에 남아 있을 수 있습니다.
+        앱 내 삭제 기능을 사용하면 등록한 미션을 제거할 수 있으며, 앱을 삭제하면 기기에 저장된 모든 데이터가 함께 제거됩니다.
+    </p>
+
+    <h2>7. 이용자의 권리</h2>
+    <p>
+        이용자는 앱 내 기능을 통해 등록한 미션을 직접 삭제할 수 있으며, 앱 삭제를 통해 로컬 저장 데이터를 제거할 수 있습니다.
+        알림 사용 여부와 알림 시간은 앱 내 설정에서 언제든지 변경할 수 있습니다.
+    </p>
+
+    <h2>8. 아동의 개인정보</h2>
+    <p>
+        본 앱은 아동을 대상으로 특별히 설계된 서비스가 아니며, 개발자가 아동의 개인정보를 별도로 수집하지 않습니다.
+    </p>
+
+    <h2>9. 문의처</h2>
+    <p>개인정보처리방침 관련 문의는 아래 이메일로 연락해 주세요.</p>
+    <p><strong>이메일:</strong> sparkkong@gmail.com</p>
+
+    <div class="footer">
+        <p><strong>공고일자:</strong> 2026년 6월 25일</p>
+        <p><strong>시행일자:</strong> 2026년 6월 25일</p>
+    </div>
+</main>
+</body>
+</html>
