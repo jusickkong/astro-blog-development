@@ -49,6 +49,8 @@ export type Thought = {
 	body?: PortableTextBlock[];
 };
 
+export type Article = Thought & { channel: string };
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 // Mirrors the slugify in project schema — strips characters invalid in URL paths
@@ -104,6 +106,23 @@ export async function getAllThoughts(): Promise<Thought[]> {
 		`*[_type == "thought"] | order(pubDate desc) {
       _id, title, description, metaDescription, pubDate, updatedDate, slug
     }`,
+	);
+}
+
+export async function getAllArticles(): Promise<Article[]> {
+	return client.fetch(
+		`*[_type == "article"] | order(pubDate desc) {
+      _id, channel, title, description, metaDescription, pubDate, updatedDate, slug
+    }`,
+	);
+}
+
+export async function getArticle(slug: string): Promise<Article | null> {
+	return client.fetch(
+		`*[_type == "article" && slug.current == $slug][0] {
+      _id, channel, title, description, metaDescription, pubDate, updatedDate, slug, body
+    }`,
+		{ slug },
 	);
 }
 

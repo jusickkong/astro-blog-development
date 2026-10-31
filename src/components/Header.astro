@@ -1,5 +1,5 @@
 ---
-import { SITE_TITLE } from '../consts';
+import { CHANNELS, SITE_TITLE } from '../consts';
 import HeaderLink from './HeaderLink.astro';
 ---
 
@@ -8,6 +8,7 @@ import HeaderLink from './HeaderLink.astro';
 		<h2><a href="/">{SITE_TITLE}</a></h2>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
+			{CHANNELS.map((channel) => <HeaderLink href={`/${channel.value}`}>{channel.title}</HeaderLink>)}
 			<HeaderLink href="/thoughts">Thoughts</HeaderLink>
 			<HeaderLink href="/project">Project</HeaderLink>
 			<HeaderLink href="/about">About</HeaderLink>
@@ -95,6 +96,8 @@ import HeaderLink from './HeaderLink.astro';
 		}
 		.internal-links {
 			justify-self: end;
+			flex-wrap: wrap;
+			justify-content: flex-end;
 		}
 		.social-links {
 			display: none;

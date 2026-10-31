@@ -2,7 +2,7 @@
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { CHANNELS, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 ---
 
 <!doctype html>
@@ -13,38 +13,23 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
   <body>
     <Header />
     <main>
-      <h2>AI로 프로그램을 만들고 기록하는 공간</h2>
+      <h2>세상 이야기와 쓸 만한 도구를 모아두는 전초기지</h2>
 
       <p>
-        이 블로그는 AI를 활용해 직접 프로그램을 만들고,
-        그 과정과 결과를 정리하는 공간입니다.
-      </p>
-
-      <p>
-        아이디어가 떠오르면 기획하고, 설계하고, 구현하고,
-        실제로 작동하는 형태까지 만드는 전 과정을 기록합니다.
-        단순한 이론 정리보다는 “직접 만들어본 결과”에 집중합니다.
+        Spax Outpost는 요즘 일어나는 일을 정리하고,
+        써볼 만한 프로그램을 소개하고,
+        직접 만들어 운영하는 앱을 기록하는 공간입니다.
       </p>
 
       <p>이곳에서 다루는 내용은 다음과 같습니다.</p>
 
       <ul>
-        <li>실생활 문제를 해결하기 위한 작은 프로그램</li>
-        <li>자동화 도구 및 개인 관리 시스템</li>
-        <li>AI를 활용한 개발 과정과 시행착오</li>
-        <li>기능 개선 기록 및 버전 업데이트 정리</li>
+        {CHANNELS.map((channel) => (
+          <li><a href={`/${channel.value}/`}>{channel.title}</a> — {channel.description}</li>
+        ))}
+        <li><a href="/project/">Project</a> — 직접 만들어 운영 중인 앱을 소개합니다.</li>
+        <li><a href="/thoughts/">Thoughts</a> — 그때그때 드는 생각을 적어둡니다.</li>
       </ul>
-
-      <p>
-        목표는 단순합니다.
-        AI를 도구로 활용해 생각을 빠르게 구현하고,
-        그 과정을 체계적으로 축적하는 것입니다.
-      </p>
-
-      <p>
-        앞으로 다양한 프로젝트들을 하나씩 정리해나갈 예정입니다.
-        작은 아이디어가 실제 동작하는 시스템이 되는 과정을 함께 공유하겠습니다.
-      </p>
     </main>
     <Footer />
   </body>

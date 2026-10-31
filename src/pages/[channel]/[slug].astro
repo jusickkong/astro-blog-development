@@ -1,0 +1,86 @@
+---
+import { getAllArticles, getArticle } from '../../lib/sanity';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import PortableText from '../../components/PortableText.astro';
+
+export async function getStaticPaths() {
+	const articles = await getAllArticles();
+	return articles.map((article) => ({
+		params: { channel: article.channel, slug: article.slug.current },
+		props: { slug: article.slug.current },
+	}));
+}
+
+type Props = { slug: string };
+
+const { slug } = Astro.props;
+const article = await getArticle(slug);
+
+if (!article) return Astro.redirect('/');
+
+const { title, description, metaDescription, pubDate, updatedDate, body } = article;
+---
+
+<html lang="ko">
+	<head>
+		<BaseHead title={title} description={description ?? title} metaDescription={metaDescription} />
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 100%;
+				margin: 0;
+			}
+			.prose {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 1em;
+				color: rgb(var(--gray-dark));
+			}
+			.title {
+				margin-bottom: 1em;
+				padding: 1em 0;
+				text-align: center;
+				line-height: 1;
+			}
+			.title h1 {
+				margin: 0 0 0.5em 0;
+			}
+			.date {
+				margin-bottom: 0.5em;
+				color: rgb(var(--gray));
+			}
+			.last-updated-on {
+				font-style: italic;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<article>
+				<div class="prose">
+					<div class="title">
+						<h1>{title}</h1>
+						<div class="date">
+							<FormattedDate date={new Date(pubDate)} />
+							{
+								updatedDate && (
+									<div class="last-updated-on">
+										Last updated on <FormattedDate date={new Date(updatedDate)} />
+									</div>
+								)
+							}
+						</div>
+						<hr />
+					</div>
+					{body && <PortableText value={body} />}
+				</div>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>

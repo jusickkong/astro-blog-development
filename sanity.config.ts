@@ -1,6 +1,7 @@
 import { codeInput } from '@sanity/code-input';
 import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
+import { CHANNELS } from './src/consts';
 import { wideLayoutPlugin } from './src/sanity/plugins/wideLayout';
 import { schemaTypes } from './src/sanity/schemaTypes';
 
@@ -43,10 +44,33 @@ export default defineConfig({
 					`count(*[_type == "thought" && _id in path("drafts.**")])`,
 				);
 
+				const channels = await Promise.all(
+					CHANNELS.map(async (channel) => ({
+						...channel,
+						draftCount: await client.fetch(
+							`count(*[_type == "article" && channel == $channel && _id in path("drafts.**")])`,
+							{ channel: channel.value },
+						),
+					})),
+				);
+
 				return S.list()
 					.id('root')
 					.title('콘텐츠')
 					.items([
+						...channels.map((channel) =>
+							S.listItem()
+								.id(`channel-${channel.value}`)
+								.title(`${channel.title}${formatDraftSuffix(channel.draftCount)}`)
+								.child(
+									S.documentList()
+										.id(`articles-${channel.value}`)
+										.title(channel.title)
+										.filter('_type == "article" && channel == $channel')
+										.params({ channel: channel.value })
+										.defaultOrdering([{ field: 'pubDate', direction: 'desc' }]),
+								),
+						),
 						S.listItem()
 							.id('projects')
 							.title(`Projects${formatDraftSuffix(allProjectDraftCount)}`)
